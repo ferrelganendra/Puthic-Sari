@@ -41,6 +41,10 @@ scripts/verify-storage-replication.js
 
 # Supabase local
 deno.lock
+supabase/.temp/
 
 # Design iteration screenshots (root-level only)
 /*.png
+
+# JCE context index runtime state
+.opencode-jce/context/
