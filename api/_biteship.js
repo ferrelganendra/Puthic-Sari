@@ -7,7 +7,7 @@ const DEFAULT_ORIGIN = {
   postalCode: Number(process.env.BITESHIP_ORIGIN_POSTAL_CODE || 55283),
 }
 
-const DEFAULT_COURIERS = process.env.BITESHIP_COURIERS || 'jne,sicepat,jnt,tiki,anteraja'
+const DEFAULT_COURIERS = process.env.BITESHIP_COURIERS || ''
 const DEFAULT_ITEM_WEIGHT = Number(process.env.BITESHIP_DEFAULT_ITEM_WEIGHT_GRAMS || 500)
 const DEFAULT_ITEM_LENGTH = Number(process.env.BITESHIP_DEFAULT_ITEM_LENGTH_CM || 30)
 const DEFAULT_ITEM_WIDTH = Number(process.env.BITESHIP_DEFAULT_ITEM_WIDTH_CM || 20)

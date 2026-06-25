@@ -22,8 +22,18 @@ function origin() {
   }
 }
 
-function courierList() {
-  return Deno.env.get('BITESHIP_COURIERS') || 'gojek,grab,jne,jnt,sicepat,anteraja,tiki'
+async function courierList() {
+  const configuredCouriers = Deno.env.get('BITESHIP_COURIERS')
+  if (configuredCouriers) return configuredCouriers
+
+  const data = await request('/v1/couriers', { method: 'GET' })
+  const codes = Array.from(new Set(
+    (data.couriers || [])
+      .map((courier: Record<string, unknown>) => String(courier.courier_code || '').trim())
+      .filter(Boolean),
+  ))
+  if (!codes.length) throw new Error('Tidak ada kurir aktif dari Biteship.')
+  return codes.join(',')
 }
 
 function testModeEnabled() {
@@ -93,7 +103,7 @@ export async function getRates(destinationPostalCode: number, items: Array<Recor
       body: JSON.stringify({
         origin_postal_code: originData.postalCode,
         destination_postal_code: destinationPostalCode,
-        couriers: courierList(),
+        couriers: await courierList(),
         items,
       }),
     })
