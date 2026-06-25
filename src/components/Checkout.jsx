@@ -147,6 +147,8 @@ export default function Checkout({ onClose }) {
   const [manualPostalCode, setManualPostalCode] = useState('')
   const [manualAreaId, setManualAreaId] = useState('')
   const [manualAreaName, setManualAreaName] = useState('')
+  const [manualLatitude, setManualLatitude] = useState(0)
+  const [manualLongitude, setManualLongitude] = useState(0)
   const [manualNote, setManualNote] = useState('')
 
   // Shipping
@@ -178,11 +180,13 @@ export default function Checkout({ onClose }) {
         city: manualCity,
         area_id: manualAreaId,
         area_name: manualAreaName,
+        latitude: manualLatitude,
+        longitude: manualLongitude,
         note: manualNote,
       }
     }
     return selectedAddress
-  }, [addressMode, selectedAddress, manualAddress, manualPostalCode, manualCity, manualAreaId, manualAreaName, manualNote, customerName])
+  }, [addressMode, selectedAddress, manualAddress, manualPostalCode, manualCity, manualAreaId, manualAreaName, manualLatitude, manualLongitude, manualNote, customerName])
 
   const isAddressValid = activeAddress?.address_line && /^\d{5}$/.test(activeAddress.postal_code)
 
@@ -310,6 +314,8 @@ export default function Checkout({ onClose }) {
       const data = await invokeCheckoutFunction('shipping-rates', {
         destinationPostalCode: activeAddress.postal_code.trim(),
         destinationAreaId: activeAddress.area_id || '',
+        destinationLatitude: activeAddress.latitude || 0,
+        destinationLongitude: activeAddress.longitude || 0,
         cart: items,
       })
       setRates(data.rates || [])
@@ -367,6 +373,8 @@ export default function Checkout({ onClose }) {
         destinationPostalCode: activeAddress.postal_code.trim(),
         destinationAreaId: activeAddress.area_id || '',
         destinationAreaName: activeAddress.area_name || '',
+        destinationLatitude: activeAddress.latitude || 0,
+        destinationLongitude: activeAddress.longitude || 0,
         destinationNote: activeAddress.note || '',
         destinationCity: activeAddress.city || '',
         selectedRate,
@@ -558,6 +566,34 @@ export default function Checkout({ onClose }) {
                         <p className="rounded-xl border border-accent/20 bg-accent/5 px-3 py-2 text-xs text-body">
                           Area Biteship dipilih: <span className="font-medium text-heading">{manualAreaName}</span>
                         </p>
+                      )}
+
+                      {manualLatitude !== 0 && (
+                        <p className="text-xs text-gray-500">
+                          Lokasi: {manualLatitude}, {manualLongitude}
+                        </p>
+                      )}
+
+                      {(manualAreaName || manualAddress) && !manualLatitude && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const pos = await new Promise((resolve, reject) => {
+                                navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 })
+                              })
+                              setManualLatitude(pos.coords.latitude)
+                              setManualLongitude(pos.coords.longitude)
+                              setRates([])
+                              setSelectedRate(null)
+                            } catch {
+                              setError('Aktifkan lokasi browser atau isi koordinat manual untuk instant courier.')
+                            }
+                          }}
+                          className="text-xs text-accent hover:text-accent-hover underline"
+                        >
+                          Tandai Lokasi Saya (untuk Instant)
+                        </button>
                       )}
 
                       {/* Show textarea + details only after a search result is chosen */}
