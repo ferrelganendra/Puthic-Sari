@@ -6,7 +6,9 @@ function destination(body: Record<string, unknown>) {
   const postalCode = normalizePostalCode(body.destinationPostalCode)
   if (!postalCode) throw new Error('Kode pos tujuan wajib diisi.')
   const areaId = String(body.destinationAreaId || '').trim()
-  return areaId ? { postalCode, areaId } : { postalCode }
+  const latitude = Number(body.destinationLatitude || 0)
+  const longitude = Number(body.destinationLongitude || 0)
+  return areaId ? { postalCode, areaId, latitude, longitude } : { postalCode, latitude, longitude }
 }
 
 Deno.serve(async (req) => {

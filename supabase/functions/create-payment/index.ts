@@ -22,6 +22,8 @@ Deno.serve(async (req) => {
     const destinationPostalCode = normalizePostalCode(body.destinationPostalCode)
     const destinationAreaId = String(body.destinationAreaId || '').trim() || null
     const destinationAreaName = String(body.destinationAreaName || '').trim() || null
+    const destinationLatitude = Number(body.destinationLatitude || 0)
+    const destinationLongitude = Number(body.destinationLongitude || 0)
     const destinationNote = String(body.destinationNote || '').trim() || null
     const note = String(body.orderNote || '').trim() || null
 
@@ -35,7 +37,9 @@ Deno.serve(async (req) => {
 
     const checkout = await buildCheckoutItems(body.cart || body.items || [])
     const selectedRate = await resolveSelectedRate(
-      destinationAreaId ? { postalCode: destinationPostalCode, areaId: destinationAreaId } : { postalCode: destinationPostalCode },
+      destinationAreaId
+        ? { postalCode: destinationPostalCode, areaId: destinationAreaId, latitude: destinationLatitude, longitude: destinationLongitude }
+        : { postalCode: destinationPostalCode, latitude: destinationLatitude, longitude: destinationLongitude },
       biteshipItems(checkout.items),
       body.selectedRate,
     )
@@ -63,6 +67,8 @@ Deno.serve(async (req) => {
           channel: 'website',
           destination_area_id: destinationAreaId,
           destination_area_name: destinationAreaName,
+          destination_latitude: destinationLatitude || null,
+          destination_longitude: destinationLongitude || null,
         },
       })
       .select('*')

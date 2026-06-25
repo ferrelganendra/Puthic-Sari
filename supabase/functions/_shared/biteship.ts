@@ -16,6 +16,8 @@ export type BiteshipRate = {
 export type BiteshipDestination = {
   postalCode: number
   areaId?: string
+  latitude?: number
+  longitude?: number
 }
 
 function origin() {
@@ -24,7 +26,17 @@ function origin() {
     contactPhone: Deno.env.get('BITESHIP_ORIGIN_CONTACT_PHONE') || '6285117606161',
     address: Deno.env.get('BITESHIP_ORIGIN_ADDRESS') || 'Jl. Perumnas, Ngropoh, Condongcatur, Kec. Depok, Sleman, DI Yogyakarta 55283',
     postalCode: Number(Deno.env.get('BITESHIP_ORIGIN_POSTAL_CODE') || 55283),
+    latitude: Number(Deno.env.get('BITESHIP_ORIGIN_LATITUDE') || 0),
+    longitude: Number(Deno.env.get('BITESHIP_ORIGIN_LONGITUDE') || 0),
   }
+}
+
+function hasCoordinates(originData: ReturnType<typeof origin>, destination: BiteshipDestination) {
+  return Boolean(originData.latitude && originData.longitude && destination.latitude && destination.longitude)
+}
+
+function isInstantRate(rate: BiteshipRate) {
+  return ['gojek', 'grab'].includes(rate.courierCompany.toLowerCase()) || rate.courierService.toLowerCase() === 'instant'
 }
 
 async function courierList() {
@@ -118,11 +130,21 @@ export async function getRates(destination: BiteshipDestination, items: Array<Re
   }
 
   try {
+    const coordinatesReady = hasCoordinates(originData, destination)
     const data = await request('/v1/rates/couriers', {
       method: 'POST',
       body: JSON.stringify({
-        origin_postal_code: originData.postalCode,
-        ...(destination.areaId ? { destination_area_id: destination.areaId } : { destination_postal_code: destination.postalCode }),
+        ...(coordinatesReady
+          ? {
+              origin_latitude: originData.latitude,
+              origin_longitude: originData.longitude,
+              destination_latitude: destination.latitude,
+              destination_longitude: destination.longitude,
+            }
+          : {
+              origin_postal_code: originData.postalCode,
+              ...(destination.areaId ? { destination_area_id: destination.areaId } : { destination_postal_code: destination.postalCode }),
+            }),
         couriers: await courierList(),
         items,
       }),
@@ -141,6 +163,7 @@ export async function getRates(destination: BiteshipDestination, items: Array<Re
         type: String(rate.type || ''),
       }))
       .filter((rate: BiteshipRate) => rate.courierCompany && rate.courierService && rate.price >= 0)
+      .filter((rate: BiteshipRate) => coordinatesReady || !isInstantRate(rate))
       .sort((a: BiteshipRate, b: BiteshipRate) => a.price - b.price)
   } catch (error) {
     if (testModeEnabled()) return dummyRates()
@@ -172,6 +195,14 @@ export async function createShipment(order: Record<string, unknown>, items: Arra
 
   const metadata = (order.metadata || {}) as Record<string, unknown>
   const destinationAreaId = String(metadata.destination_area_id || '').trim()
+  const destinationLatitude = Number(metadata.destination_latitude || 0)
+  const destinationLongitude = Number(metadata.destination_longitude || 0)
+  const selectedCourier = order.selected_courier as BiteshipRate
+  const destination = { postalCode: Number(order.destination_postal_code || 0), latitude: destinationLatitude, longitude: destinationLongitude }
+  const coordinatesReady = hasCoordinates(originData, destination)
+  if (isInstantRate(selectedCourier) && !coordinatesReady) {
+    throw new Error('Gojek/Grab Instant butuh koordinat toko dan alamat tujuan. Pilih layanan reguler atau lengkapi koordinat.')
+  }
 
   return await request('/v1/orders', {
     method: 'POST',
@@ -182,14 +213,16 @@ export async function createShipment(order: Record<string, unknown>, items: Arra
       origin_contact_phone: originData.contactPhone,
       origin_address: originData.address,
       origin_postal_code: originData.postalCode,
+      ...(coordinatesReady ? { origin_coordinate: { latitude: originData.latitude, longitude: originData.longitude } } : {}),
       destination_contact_name: order.customer_name,
       destination_contact_phone: order.customer_phone,
       destination_address: order.destination_address,
       destination_note: order.destination_note || undefined,
       destination_postal_code: order.destination_postal_code,
       ...(destinationAreaId ? { destination_area_id: destinationAreaId } : {}),
-      courier_company: (order.selected_courier as BiteshipRate).courierCompany,
-      courier_type: (order.selected_courier as BiteshipRate).courierService,
+      ...(coordinatesReady ? { destination_coordinate: { latitude: destinationLatitude, longitude: destinationLongitude } } : {}),
+      courier_company: selectedCourier.courierCompany,
+      courier_type: selectedCourier.courierService,
       delivery_type: 'now',
       order_note: order.order_note || `Order ${order.order_number}`,
       reference_id: order.order_number,
