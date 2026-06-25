@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://puthicsari.com/sitemap.xml
+
+# Block admin access from bots
+Disallow: /admin
+Disallow: /api/

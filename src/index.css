@@ -1,0 +1,201 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Puthic Sari design tokens — soft floral luxury */
+  --color-primary: #B77B7E;
+  --color-primary-dark: #8C5E58;
+  --color-primary-soft: #D6A5A7;
+  --color-secondary: #F3DAD8;
+  --color-secondary-deep: #E8C0BD;
+  --color-background: #FFF9F7;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #2F2523;
+  --color-text-secondary: #7A6460;
+  --color-text-muted: #A3918D;
+  --color-border: #E8D4D0;
+  --color-border-soft: #F1E2DE;
+  --color-success: #5F8A6B;
+  --color-sale: #C85C5C;
+  --button-radius: 9999px;
+  --badge-radius: 9999px;
+  --card-radius: 14px;
+  --button-letter-spacing: 0.08em;
+  --section-spacing-mobile: 48px;
+  --section-spacing-desktop: 88px;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+  body {
+    font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+    color: var(--color-text-primary);
+    background-color: var(--color-background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-text-primary);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* === Primary CTA — warm rose pill, soft premium feel === */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-3.5 font-medium text-sm transition-all duration-200 min-h-11;
+    background-color: var(--color-primary);
+    color: #fff;
+    border-radius: var(--button-radius);
+    letter-spacing: var(--button-letter-spacing);
+  }
+  .btn-primary:hover {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(183, 123, 126, 0.25);
+  }
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* === Secondary CTA — soft outline === */
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-3.5 font-medium text-sm transition-all duration-200 min-h-11;
+    color: var(--color-text-primary);
+    background-color: transparent;
+    border: 1.5px solid var(--color-text-primary);
+    border-radius: var(--button-radius);
+    letter-spacing: var(--button-letter-spacing);
+  }
+  .btn-outline:hover {
+    background-color: var(--color-text-primary);
+    color: #fff;
+  }
+
+  /* === Ghost/tertiary — text-only with arrow === */
+  .btn-ghost {
+    @apply inline-flex items-center gap-1.5 font-medium text-sm transition-colors duration-200 min-h-11;
+    color: var(--color-text-primary);
+    letter-spacing: 0.02em;
+  }
+  .btn-ghost:hover {
+    color: var(--color-primary);
+  }
+
+  /* === Premium badges — pill-shaped, soft colors === */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase;
+    border-radius: var(--badge-radius);
+    letter-spacing: 0.08em;
+  }
+  .badge-sale {
+    background-color: var(--color-sale);
+    color: #fff;
+    @apply inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase;
+    border-radius: var(--badge-radius);
+    letter-spacing: 0.08em;
+  }
+  .badge-soldout {
+    background-color: var(--color-text-secondary);
+    color: #fff;
+    @apply inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase;
+    border-radius: var(--badge-radius);
+    letter-spacing: 0.08em;
+  }
+  .badge-bestseller {
+    background-color: var(--color-primary-dark);
+    color: #fff;
+    @apply inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase;
+    border-radius: var(--badge-radius);
+    letter-spacing: 0.08em;
+  }
+  .badge-new {
+    background-color: var(--color-primary);
+    color: #fff;
+    @apply inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase;
+    border-radius: var(--badge-radius);
+    letter-spacing: 0.08em;
+  }
+  .badge-custom {
+    background-color: var(--color-success);
+    color: #fff;
+    @apply inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase;
+    border-radius: var(--badge-radius);
+    letter-spacing: 0.08em;
+  }
+
+  /* === Eyebrow text — small caps style === */
+  .eyebrow {
+    @apply text-xs font-medium uppercase;
+    color: var(--color-primary-dark);
+    letter-spacing: var(--button-letter-spacing);
+  }
+
+  /* === Premium card image container === */
+  .card-image {
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    background: var(--color-secondary);
+  }
+
+  /* === Section container with editorial spacing === */
+  .section {
+    @apply py-12 md:py-20 lg:py-24;
+  }
+  .section-tight {
+    @apply py-10 md:py-14;
+  }
+
+  /* === Skeleton state === */
+  .skeleton {
+    background: linear-gradient(90deg, #F3DAD8 0%, #F8E7E4 50%, #F3DAD8 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Editorial heading display */
+  .font-display {
+    font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .skeleton {
+    animation: none;
+  }
+}

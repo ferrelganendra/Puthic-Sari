@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment variables — never commit secrets
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Vercel local
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Migration scripts
+scripts/migrate-to-storage.js
+scripts/update-db-images.js
+scripts/verify-storage-replication.js
+
+# JCE/OpenCode runtime state
+.opencode-jce/
+.opencode-context.md
+.omo/
+.playwright-mcp/
+
+# Supabase local
+deno.lock
+
+# Design iteration screenshots (root-level only)
+/*.png
