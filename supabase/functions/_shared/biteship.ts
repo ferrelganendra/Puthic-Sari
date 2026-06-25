@@ -13,6 +13,11 @@ export type BiteshipRate = {
   type?: string
 }
 
+export type BiteshipDestination = {
+  postalCode: number
+  areaId?: string
+}
+
 function origin() {
   return {
     contactName: Deno.env.get('BITESHIP_ORIGIN_CONTACT_NAME') || 'Puthic Sari',
@@ -90,7 +95,22 @@ async function request(path: string, init: RequestInit) {
   return data
 }
 
-export async function getRates(destinationPostalCode: number, items: Array<Record<string, unknown>>) {
+export async function searchAreas(input: string) {
+  const query = input.trim()
+  if (query.length < 3) return []
+
+  const data = await request(`/v1/maps/areas?countries=ID&type=single&input=${encodeURIComponent(query)}`, { method: 'GET' })
+  return (data.areas || []).map((area: Record<string, unknown>) => ({
+    id: String(area.id || ''),
+    name: String(area.name || ''),
+    city: String(area.administrative_division_level_2_name || ''),
+    district: String(area.administrative_division_level_3_name || ''),
+    province: String(area.administrative_division_level_1_name || ''),
+    postalCode: String(area.postal_code || ''),
+  })).filter((area: Record<string, string>) => area.id && area.name)
+}
+
+export async function getRates(destination: BiteshipDestination, items: Array<Record<string, unknown>>) {
   const originData = origin()
 
   if (testModeEnabled()) {
@@ -102,7 +122,7 @@ export async function getRates(destinationPostalCode: number, items: Array<Recor
       method: 'POST',
       body: JSON.stringify({
         origin_postal_code: originData.postalCode,
-        destination_postal_code: destinationPostalCode,
+        ...(destination.areaId ? { destination_area_id: destination.areaId } : { destination_postal_code: destination.postalCode }),
         couriers: await courierList(),
         items,
       }),
@@ -128,8 +148,8 @@ export async function getRates(destinationPostalCode: number, items: Array<Recor
   }
 }
 
-export async function resolveSelectedRate(destinationPostalCode: number, items: Array<Record<string, unknown>>, selectedRate: Partial<BiteshipRate>) {
-  const rates = await getRates(destinationPostalCode, items)
+export async function resolveSelectedRate(destination: BiteshipDestination, items: Array<Record<string, unknown>>, selectedRate: Partial<BiteshipRate>) {
+  const rates = await getRates(destination, items)
   const match = rates.find((rate: BiteshipRate) => (
     rate.courierCompany === selectedRate.courierCompany &&
     rate.courierService === selectedRate.courierService
@@ -150,6 +170,9 @@ export async function createShipment(order: Record<string, unknown>, items: Arra
     }
   }
 
+  const metadata = (order.metadata || {}) as Record<string, unknown>
+  const destinationAreaId = String(metadata.destination_area_id || '').trim()
+
   return await request('/v1/orders', {
     method: 'POST',
     body: JSON.stringify({
@@ -164,6 +187,7 @@ export async function createShipment(order: Record<string, unknown>, items: Arra
       destination_address: order.destination_address,
       destination_note: order.destination_note || undefined,
       destination_postal_code: order.destination_postal_code,
+      ...(destinationAreaId ? { destination_area_id: destinationAreaId } : {}),
       courier_company: (order.selected_courier as BiteshipRate).courierCompany,
       courier_type: (order.selected_courier as BiteshipRate).courierService,
       delivery_type: 'now',

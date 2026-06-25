@@ -34,7 +34,7 @@ function apiErrorMessage(data, fallback) {
 
 function safeCheckoutErrorMessage(error, fallback = 'Checkout gagal. Silakan coba lagi atau hubungi admin.') {
   const message = error?.message || String(error || '')
-  if (/keranjang kosong|produk tidak ditemukan|tidak aktif|sold out|nama penerima|nomor whatsapp|alamat pengiriman|kode pos|pilih layanan kurir|layanan kurir tidak tersedia/i.test(message)) {
+  if (/keranjang kosong|produk tidak ditemukan|tidak aktif|sold out|nama penerima|nomor whatsapp|alamat pengiriman|kode pos|area biteship|pilih layanan kurir|layanan kurir tidak tersedia/i.test(message)) {
     return message
   }
   if (/ongkir|kurir/i.test(fallback)) return 'Gagal mengambil ongkir. Silakan hubungi admin untuk bantuan kurir manual.'
@@ -145,6 +145,8 @@ export default function Checkout({ onClose }) {
   const [manualAddress, setManualAddress] = useState('')
   const [manualCity, setManualCity] = useState('')
   const [manualPostalCode, setManualPostalCode] = useState('')
+  const [manualAreaId, setManualAreaId] = useState('')
+  const [manualAreaName, setManualAreaName] = useState('')
   const [manualNote, setManualNote] = useState('')
 
   // Shipping
@@ -174,11 +176,13 @@ export default function Checkout({ onClose }) {
         address_line: manualAddress,
         postal_code: manualPostalCode.replace(/\D/g, ''),
         city: manualCity,
+        area_id: manualAreaId,
+        area_name: manualAreaName,
         note: manualNote,
       }
     }
     return selectedAddress
-  }, [addressMode, selectedAddress, manualAddress, manualPostalCode, manualCity, manualNote, customerName])
+  }, [addressMode, selectedAddress, manualAddress, manualPostalCode, manualCity, manualAreaId, manualAreaName, manualNote, customerName])
 
   const isAddressValid = activeAddress?.address_line && /^\d{5}$/.test(activeAddress.postal_code)
 
@@ -305,6 +309,7 @@ export default function Checkout({ onClose }) {
     try {
       const data = await invokeCheckoutFunction('shipping-rates', {
         destinationPostalCode: activeAddress.postal_code.trim(),
+        destinationAreaId: activeAddress.area_id || '',
         cart: items,
       })
       setRates(data.rates || [])
@@ -360,6 +365,8 @@ export default function Checkout({ onClose }) {
         customerPhone: customerPhone.trim(),
         destinationAddress: activeAddress.address_line.trim(),
         destinationPostalCode: activeAddress.postal_code.trim(),
+        destinationAreaId: activeAddress.area_id || '',
+        destinationAreaName: activeAddress.area_name || '',
         destinationNote: activeAddress.note || '',
         destinationCity: activeAddress.city || '',
         selectedRate,
@@ -533,9 +540,11 @@ export default function Checkout({ onClose }) {
                   ) : (
                     <div className="space-y-4">
                       <AddressSearch
-                        onSelect={({ address, city, postalCode }) => {
+                        onSelect={({ address, city, postalCode, areaId, areaName }) => {
                           setManualAddress(address)
                           setManualCity(city)
+                          setManualAreaId(areaId || '')
+                          setManualAreaName(areaName || '')
                           if (postalCode) {
                             setManualPostalCode(postalCode)
                             setRates([])
@@ -544,6 +553,12 @@ export default function Checkout({ onClose }) {
                           setError('')
                         }}
                       />
+
+                      {manualAreaName && (
+                        <p className="rounded-xl border border-accent/20 bg-accent/5 px-3 py-2 text-xs text-body">
+                          Area Biteship dipilih: <span className="font-medium text-heading">{manualAreaName}</span>
+                        </p>
+                      )}
 
                       {/* Show textarea + details only after a search result is chosen */}
                       {manualAddress && (
@@ -574,7 +589,7 @@ export default function Checkout({ onClose }) {
                                 inputMode="numeric"
                                 maxLength="5"
                                 value={manualPostalCode}
-                                onChange={(e) => { setManualPostalCode(e.target.value.replace(/\D/g, '').slice(0, 5)); setError(''); setRates([]); setSelectedRate(null) }}
+                                onChange={(e) => { setManualPostalCode(e.target.value.replace(/\D/g, '').slice(0, 5)); setManualAreaId(''); setManualAreaName(''); setError(''); setRates([]); setSelectedRate(null) }}
                                 className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none transition-colors"
                                 placeholder="55283"
                               />

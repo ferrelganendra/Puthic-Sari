@@ -2,6 +2,13 @@ import { biteshipItems, buildCheckoutItems } from '../_shared/checkout.ts'
 import { getRates } from '../_shared/biteship.ts'
 import { apiError, handleOptions, jsonResponse, normalizePostalCode, readJson } from '../_shared/http.ts'
 
+function destination(body: Record<string, unknown>) {
+  const postalCode = normalizePostalCode(body.destinationPostalCode)
+  if (!postalCode) throw new Error('Kode pos tujuan wajib diisi.')
+  const areaId = String(body.destinationAreaId || '').trim()
+  return areaId ? { postalCode, areaId } : { postalCode }
+}
+
 Deno.serve(async (req) => {
   const options = handleOptions(req)
   if (options) return options
@@ -9,11 +16,8 @@ Deno.serve(async (req) => {
 
   try {
     const body = await readJson(req)
-    const destinationPostalCode = normalizePostalCode(body.destinationPostalCode)
-    if (!destinationPostalCode) throw new Error('Kode pos tujuan wajib diisi.')
-
     const { items, subtotal } = await buildCheckoutItems(body.cart || body.items || [])
-    const rates = await getRates(destinationPostalCode, biteshipItems(items))
+    const rates = await getRates(destination(body), biteshipItems(items))
 
     return jsonResponse({ success: true, subtotal, rates }, 200, req)
   } catch (error) {
