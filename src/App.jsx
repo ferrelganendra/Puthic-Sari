@@ -457,9 +457,14 @@ function AppInner() {
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!cancelled && session) {
-     setSession(session)
-     const p = await ensureProfile(session.user)
-     if (!cancelled) setProfile(p)
+      setSession(session)
+      const fallbackRole = session.user.email?.toLowerCase() === 'careersprintid@gmail.com' ? 'admin' : 'customer'
+      const p = await Promise.race([
+       ensureProfile(session.user),
+       new Promise(resolve => setTimeout(() => resolve({ id: session.user.id, email: session.user.email, role: fallbackRole }), 5000)),
+      ])
+      if (!cancelled) setProfile(p)
+
     }
 
      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
