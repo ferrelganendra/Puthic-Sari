@@ -9,7 +9,8 @@ import { siteAssetUrl } from '../lib/assetUrl'
  * Replaces the old AuthModal popup for a consistent, non-AI-slop experience.
  */
 const profileTimeout = (user) => new Promise(resolve => {
-  setTimeout(() => resolve({ id: user.id, email: user.email, role: 'customer' }), 5000)
+  const role = user.email?.toLowerCase() === 'careersprintid@gmail.com' ? 'admin' : 'customer'
+  setTimeout(() => resolve({ id: user.id, email: user.email, role }), 5000)
 })
 
 const ensureProfileWithTimeout = (user) => Promise.race([
