@@ -462,18 +462,21 @@ function AppInner() {
      if (!cancelled) setProfile(p)
     }
 
-    const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
-     setSession(session)
-     if (!session) {
-      setProfile(null)
-      setAuthLoading(false)
-      return
-     }
+     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      if (!session) {
+       setProfile(null)
+       setAuthLoading(false)
+       return
+      }
 
-     const p = await ensureProfile(session.user)
-     if (!cancelled) setProfile(p)
-     setAuthLoading(false)
-    })
+      setAuthLoading(false)
+      setTimeout(async () => {
+       const p = await ensureProfile(session.user)
+       if (!cancelled) setProfile(p)
+      }, 0)
+     })
+
     subscription = data.subscription
    } catch (error) {
      if (import.meta.env.DEV) console.warn('Gagal membaca sesi:', error.message)

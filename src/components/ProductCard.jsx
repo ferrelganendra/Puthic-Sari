@@ -1,6 +1,7 @@
 import { memo, useState } from 'react'
 import { HiHeart, HiSparkles } from 'react-icons/hi'
 import { useWishlist } from '../context/WishlistContext'
+import { productImageUrl } from '../lib/assetUrl'
 
 /**
  * ProductCard — Premium Puthic Sari product card.
@@ -25,7 +26,7 @@ function ProductCard({ product, onViewDetail, priority = false }) {
   const isSoldOut = product.is_sold_out ?? product.isSoldOut ?? false
   const images = product.images?.length ? product.images : [product.image].filter(Boolean)
   // Prefer first full-size image (higher resolution) over thumbnail for crisp display
-  const displayImg = images[0] || product.thumbnail || product.image
+  const displayImg = productImageUrl(images[0] || product.thumbnail || product.image)
   const wishlisted = isWishlisted(product.id)
   const pricePrefix = product.price_from ? 'Mulai ' : ''
 
