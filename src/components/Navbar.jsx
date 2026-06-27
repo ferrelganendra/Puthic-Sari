@@ -60,15 +60,22 @@ export default function Navbar({
     megaTimeoutRef.current = setTimeout(() => setShowMega(false), 150)
   }
 
+  const navProductTypes = [
+    { name: 'Buket Artificial', slug: 'Artificial Flowers' },
+    { name: 'Buket Segar', slug: 'Fresh Flowers' },
+    { name: 'Giftbox', slug: 'Giftbox' },
+  ]
   const navOccasions = [
-    { name: 'Artificial Flowers', slug: 'Artificial Flowers' },
-    { name: 'Fresh Flowers', slug: 'Fresh Flowers' },
     { name: 'Wisuda', slug: 'Wisuda' },
     { name: 'Ulang Tahun', slug: 'Ulang Tahun' },
     { name: 'Anniversary', slug: 'Anniversary' },
-    { name: 'Giftbox', slug: 'Giftbox' },
-    { name: 'Pria', slug: 'Pria' },
-    { name: 'Wanita', slug: 'Wanita' },
+    { name: 'Wedding', slug: 'Wedding' },
+    { name: 'Hadiah', slug: 'Hadiah' },
+    { name: 'Grand Opening', slug: 'Grand Opening' },
+  ]
+  const navRecipients = [
+    { name: 'Untuk Pria', slug: 'Pria' },
+    { name: 'Untuk Wanita', slug: 'Wanita' },
   ]
 
   return (
@@ -133,8 +140,23 @@ export default function Navbar({
                     <HiChevronDown className={`w-3 h-3 transition-transform ${showMega ? 'rotate-180' : ''}`} />
                   </button>
                   {showMega && (
-                    <div className="absolute top-full left-0 bg-surface shadow-soft-lg rounded-b-[14px] z-50 min-w-[640px] p-8 mt-1">
-                      <div className="grid grid-cols-2 gap-10">
+                    <div className="absolute top-full left-0 bg-surface shadow-soft-lg rounded-b-[14px] z-50 min-w-[760px] p-8 mt-1">
+                      <div className="grid grid-cols-3 gap-10">
+                        <div>
+                          <h4 className="mb-4 text-[11px] font-semibold uppercase tracking-eyebrow text-primary-dark">Berdasarkan Produk</h4>
+                          <div className="flex flex-col gap-2.5">
+                            {navProductTypes.map(type => (
+                              <a
+                                key={type.slug}
+                                href={`/collections/${encodeURIComponent(type.slug)}`}
+                                onClick={(e) => { e.preventDefault(); onCollectionNavigate?.(type.slug); setShowMega(false) }}
+                                className="text-sm text-text-primary hover:text-primary transition-colors"
+                              >
+                                {type.name}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
                         <div>
                           <h4 className="mb-4 text-[11px] font-semibold uppercase tracking-eyebrow text-primary-dark">Berdasarkan Momen</h4>
                           <div className="flex flex-col gap-2.5">
@@ -151,16 +173,16 @@ export default function Navbar({
                           </div>
                         </div>
                         <div>
-                          <h4 className="mb-4 text-[11px] font-semibold uppercase tracking-eyebrow text-primary-dark">Berdasarkan Bunga</h4>
+                          <h4 className="mb-4 text-[11px] font-semibold uppercase tracking-eyebrow text-primary-dark">Berdasarkan Penerima</h4>
                           <div className="flex flex-col gap-2.5">
-                            {categories.map(cat => (
+                            {navRecipients.map(recipient => (
                               <a
-                                key={cat.id}
-                                href={`/collections/${encodeURIComponent(cat.name)}`}
-                                onClick={(e) => { e.preventDefault(); onCollectionNavigate?.(cat.name); setShowMega(false) }}
+                                key={recipient.slug}
+                                href={`/collections/${encodeURIComponent(recipient.slug)}`}
+                                onClick={(e) => { e.preventDefault(); onCollectionNavigate?.(recipient.slug); setShowMega(false) }}
                                 className="text-sm text-text-primary hover:text-primary transition-colors"
                               >
-                                {cat.name}
+                                {recipient.name}
                               </a>
                             ))}
                           </div>
@@ -293,7 +315,19 @@ export default function Navbar({
                     />
                   </form>
 
-                  <p className="eyebrow text-primary-dark px-1 py-2">Berdasarkan Momen</p>
+                  <p className="eyebrow text-primary-dark px-1 py-2">Berdasarkan Produk</p>
+                  {navProductTypes.map(type => (
+                    <button
+                      key={type.slug}
+                      onClick={() => { onCollectionNavigate?.(type.slug); closeDrawer() }}
+                      className="w-full flex items-center justify-between py-3 text-[15px] text-text-primary hover:text-primary border-b border-border-soft"
+                    >
+                      <span>{type.name}</span>
+                      <HiChevronRight className="text-base text-text-muted" />
+                    </button>
+                  ))}
+
+                  <p className="eyebrow text-primary-dark px-1 py-2 mt-4">Berdasarkan Momen</p>
                   {navOccasions.map(occ => (
                     <button
                       key={occ.slug}
@@ -301,6 +335,18 @@ export default function Navbar({
                       className="w-full flex items-center justify-between py-3 text-[15px] text-text-primary hover:text-primary border-b border-border-soft"
                     >
                       <span>{occ.name}</span>
+                      <HiChevronRight className="text-base text-text-muted" />
+                    </button>
+                  ))}
+
+                  <p className="eyebrow text-primary-dark px-1 py-2 mt-4">Berdasarkan Penerima</p>
+                  {navRecipients.map(recipient => (
+                    <button
+                      key={recipient.slug}
+                      onClick={() => { onCollectionNavigate?.(recipient.slug); closeDrawer() }}
+                      className="w-full flex items-center justify-between py-3 text-[15px] text-text-primary hover:text-primary border-b border-border-soft"
+                    >
+                      <span>{recipient.name}</span>
                       <HiChevronRight className="text-base text-text-muted" />
                     </button>
                   ))}

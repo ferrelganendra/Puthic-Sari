@@ -3,6 +3,13 @@ import { HiOutlineX, HiOutlinePhotograph, HiOutlineTrash, HiOutlineUpload } from
 import { supabase } from '../../lib/supabase'
 
 const productFlagsMigrationMessage = 'Kolom Best Seller / Sold Out belum ada di Supabase. Jalankan scripts/migration-product-flags.sql di SQL Editor, lalu reload halaman admin.'
+const categoryLabel = {
+ 'Artificial Flowers': 'Buket Artificial',
+ 'Fresh Flowers': 'Buket Segar',
+ Giftbox: 'Giftbox',
+ Pria: 'Untuk Pria',
+ Wanita: 'Untuk Wanita',
+}
 
 const isMissingProductFlagColumn = (error) => {
  const message = error?.message || ''
@@ -247,7 +254,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
       />
      </div>
 
-     {/* Harga + Kategori + Diskon */}
+     {/* Harga + Jenis Produk + Diskon */}
      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div>
        <label className="block text-sm font-medium text-gray-700 mb-1.5">Harga (Rp)</label>
@@ -261,15 +268,15 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
        />
       </div>
       <div>
-       <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori</label>
+       <label className="block text-sm font-medium text-gray-700 mb-1.5">Jenis Produk</label>
        <select
         value={form.category_id}
         onChange={e => setForm({ ...form, category_id: e.target.value })}
         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 focus:bg-white transition-all"
        >
-        <option value="">Pilih kategori</option>
+        <option value="">Pilih jenis produk</option>
         {categories.map(c => (
-         <option key={c.id} value={c.id}>{c.name}</option>
+         <option key={c.id} value={c.id}>{categoryLabel[c.name] || c.name}</option>
         ))}
        </select>
       </div>
@@ -298,10 +305,10 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
       </div>
      )}
 
-     {/* Acara / Occasions */}
+     {/* Momen / Occasions */}
      <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">Cocok untuk Acara</label>
-      <p className="text-xs text-gray-400 mb-2">Pilih satu atau lebih acara yang sesuai dengan buket ini.</p>
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">Cocok untuk Momen</label>
+      <p className="text-xs text-gray-400 mb-2">Pilih satu atau lebih momen yang sesuai dengan buket ini.</p>
       <div className="flex flex-wrap gap-2">
        {occasions.map(occ => {
         const active = selectedOccasions.includes(occ.id)
@@ -321,7 +328,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
         )
        })}
        {occasions.length === 0 && (
-        <p className="text-xs text-gray-400">Belum ada acara. Tambahkan di tab Acara.</p>
+        <p className="text-xs text-gray-400">Belum ada momen. Tambahkan di tab Momen.</p>
        )}
       </div>
      </div>

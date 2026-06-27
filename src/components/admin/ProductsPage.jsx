@@ -6,6 +6,13 @@ import ConfirmDialog from './ConfirmDialog'
 
 const formatPrice = (p) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(p)
 const productFlagsMigrationMessage = 'Kolom Best Seller / Sold Out belum ada di Supabase. Jalankan scripts/migration-product-flags.sql di SQL Editor, lalu reload halaman admin.'
+const categoryLabel = {
+ 'Artificial Flowers': 'Buket Artificial',
+ 'Fresh Flowers': 'Buket Segar',
+ Giftbox: 'Giftbox',
+ Pria: 'Untuk Pria',
+ Wanita: 'Untuk Wanita',
+}
 
 const isMissingProductFlagColumn = (error) => {
  const message = error?.message || ''
@@ -185,10 +192,11 @@ export default function ProductsPage({ onProductsChanged }) {
      <div className="overflow-x-auto">
       <table className="w-full">
        <thead>
-        <tr className="bg-gray-50 border-b border-gray-200">
-         <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Produk</th>
-         <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Kategori</th>
-         <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga</th>
+         <tr className="bg-gray-50 border-b border-gray-200">
+          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Produk</th>
+          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Jenis Produk</th>
+          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga</th>
+
          <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Status</th>
          <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
         </tr>
@@ -228,7 +236,8 @@ export default function ProductsPage({ onProductsChanged }) {
            </div>
           </td>
           <td className="py-3 px-4 hidden md:table-cell">
-           <span className="text-sm text-gray-500">{p.categories?.name || p.category || '-'}</span>
+            <span className="text-sm text-gray-500">{categoryLabel[p.categories?.name || p.category] || p.categories?.name || p.category || '-'}</span>
+
           </td>
           <td className="py-3 px-4">
            <div>

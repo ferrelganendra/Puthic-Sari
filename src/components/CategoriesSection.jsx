@@ -33,6 +33,12 @@ function getCategoryProducts(products, slug) {
       return products.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(2))
     case 'Anniversary':
       return products.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(3))
+    case 'Wedding':
+      return products.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(4))
+    case 'Hadiah':
+      return products.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(5))
+    case 'Grand Opening':
+      return products.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(6))
     default:
       // Category-based: match by exact name OR substring (handles "Artificial" ↔ "Artificial Flowers")
       return products.filter(p => {

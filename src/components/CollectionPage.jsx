@@ -21,6 +21,14 @@ const priceRanges = [
   { value: '600000+', label: 'Di atas Rp600.000' },
 ]
 
+const collectionLabel = {
+  'Artificial Flowers': 'Buket Artificial',
+  'Fresh Flowers': 'Buket Segar',
+  Giftbox: 'Giftbox',
+  Pria: 'Untuk Pria',
+  Wanita: 'Untuk Wanita',
+}
+
 export default function CollectionPage({ products, categories, onViewDetail, initialCategory = null, onHome }) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory)
   const [selectedPrice, setSelectedPrice] = useState('all')
@@ -47,8 +55,10 @@ export default function CollectionPage({ products, categories, onViewDetail, ini
       result = result.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(4))
     } else if (selectedCategory === 'Hadiah') {
       result = result.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(5))
+    } else if (selectedCategory === 'Grand Opening') {
+      result = result.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(6))
     } else if (selectedCategory) {
-      // Top-level category filter (Artificial Flowers, Fresh Flowers, Giftbox, Pria, Wanita)
+      // Product type / recipient filter (Artificial Flowers, Fresh Flowers, Giftbox, Pria, Wanita)
       result = result.filter(p => p.category === selectedCategory)
     }
 
@@ -136,7 +146,7 @@ export default function CollectionPage({ products, categories, onViewDetail, ini
               <h1 className="text-2xl font-semibold text-heading">
                 {selectedCategory === 'Best Seller' ? 'Best Seller'
                   : selectedCategory === 'New Arrivals' ? 'New Arrivals'
-                  : selectedCategory || 'Semua Produk'}
+                  : collectionLabel[selectedCategory] || selectedCategory || 'Semua Produk'}
               </h1>
               <p className="mt-1 text-sm text-text-muted">
                 {filteredProducts.length} produk ditemukan
@@ -186,7 +196,7 @@ export default function CollectionPage({ products, categories, onViewDetail, ini
 
               {/* Category filter */}
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-heading mb-3">Kategori</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-heading mb-3">Jenis Produk</h3>
                 <div className="space-y-1">
                   <button
                     onClick={() => handleCategoryChange(null)}
@@ -204,7 +214,7 @@ export default function CollectionPage({ products, categories, onViewDetail, ini
                         selectedCategory === cat.name ? 'bg-heading text-white font-medium' : 'text-text-secondary hover:bg-secondary/40'
                       }`}
                     >
-                      {cat.name}
+                      {collectionLabel[cat.name] || cat.name}
                     </button>
                   ))}
                 </div>
