@@ -471,10 +471,6 @@ function AppInner() {
       }
 
       setAuthLoading(false)
-      setTimeout(async () => {
-       const p = await ensureProfile(session.user)
-       if (!cancelled) setProfile(p)
-      }, 0)
      })
 
     subscription = data.subscription

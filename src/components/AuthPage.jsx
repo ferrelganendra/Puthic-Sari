@@ -8,6 +8,15 @@ import { siteAssetUrl } from '../lib/assetUrl'
  * AuthPage — full-page login / register / forgot-password.
  * Replaces the old AuthModal popup for a consistent, non-AI-slop experience.
  */
+const profileTimeout = (user) => new Promise(resolve => {
+  setTimeout(() => resolve({ id: user.id, email: user.email, role: 'customer' }), 5000)
+})
+
+const ensureProfileWithTimeout = (user) => Promise.race([
+  ensureProfile(user),
+  profileTimeout(user),
+])
+
 export default function AuthPage({ onAuth, initialTab = 'login' }) {
   const [tab, setTab] = useState(initialTab)
   const [email, setEmail] = useState('')
@@ -26,7 +35,7 @@ export default function AuthPage({ onAuth, initialTab = 'login' }) {
     e.preventDefault(); setLoading(true); setError('')
     const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password })
     if (authError) { setError('Email atau password salah.'); setLoading(false); return }
-    const profile = await ensureProfile(data.user)
+    const profile = await ensureProfileWithTimeout(data.user)
     onAuth(data.session, profile)
     setLoading(false)
   }
@@ -38,7 +47,7 @@ export default function AuthPage({ onAuth, initialTab = 'login' }) {
     const { data, error: authError } = await supabase.auth.signUp({ email, password, options: { data: { name } } })
     if (authError) { setError(authError.message); setLoading(false); return }
     if (data.user && !data.session) { setSuccess('Akun berhasil dibuat! Cek email untuk verifikasi.'); setLoading(false); return }
-    if (data.session) { const profile = await ensureProfile(data.user); onAuth(data.session, profile) }
+    if (data.session) { const profile = await ensureProfileWithTimeout(data.user); onAuth(data.session, profile) }
     setLoading(false)
   }
 
