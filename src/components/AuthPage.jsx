@@ -18,6 +18,18 @@ const ensureProfileWithTimeout = (user) => Promise.race([
   profileTimeout(user),
 ])
 
+const signInWithTimeout = async (email, password) => {
+  const signIn = supabase.auth.signInWithPassword({ email, password })
+  const timeout = new Promise(resolve => setTimeout(() => resolve({ timedOut: true }), 5000))
+  const result = await Promise.race([signIn, timeout])
+  if (!result.timedOut) return result
+
+  const { data: { session } } = await supabase.auth.getSession()
+  return session
+    ? { data: { session, user: session.user }, error: null }
+    : await signIn
+}
+
 export default function AuthPage({ onAuth, initialTab = 'login' }) {
   const [tab, setTab] = useState(initialTab)
   const [email, setEmail] = useState('')
@@ -34,7 +46,7 @@ export default function AuthPage({ onAuth, initialTab = 'login' }) {
 
   const handleLogin = async (e) => {
     e.preventDefault(); setLoading(true); setError('')
-    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error: authError } = await signInWithTimeout(email, password)
     if (authError) { setError('Email atau password salah.'); setLoading(false); return }
     const profile = await ensureProfileWithTimeout(data.user)
     onAuth(data.session, profile)
