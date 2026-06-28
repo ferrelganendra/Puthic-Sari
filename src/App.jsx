@@ -67,15 +67,15 @@ const normalizeProduct = (product) => {
   const fallbackBestSeller = fallback.is_best_seller ?? badge.includes('best seller')
   const fallbackNewArrival = fallback.is_new_arrival ?? (badge.includes('baru') || badge.includes('new'))
 
-  return {
-   ...fallback,
-   ...product,
-   images,
-   image: images[0] || product.image || fallback.image || '',
-   thumbnail: product.thumbnail || fallback.thumbnail || productThumbnailByName.get(product.name),
-   category: product.category || fallback.category,
-   description: buildProductDescription({ ...fallback, ...product }),
-   material: product.material || fallback.material || null,
+   return {
+    ...fallback,
+    ...product,
+    images,
+    image: images[0] || product.image || fallback.image || '',
+    thumbnail: product.thumbnail || fallback.thumbnail || productThumbnailByName.get(product.name),
+    category: product.category || fallback.category,
+    description: product.description || fallback.description || buildProductDescription({ ...fallback, ...product }),
+    material: product.material || fallback.material || null,
    occasionIds: (product.product_occasions || []).map(po => po.occasion_id),
    is_best_seller: Boolean(product.is_best_seller || fallbackBestSeller),
    is_sold_out: product.is_sold_out ?? product.isSoldOut ?? fallback.is_sold_out ?? fallback.isSoldOut ?? false,

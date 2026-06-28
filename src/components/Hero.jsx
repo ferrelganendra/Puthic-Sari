@@ -37,7 +37,7 @@ const FALLBACK_SLIDES = [
     mobileSrc: '/posters/poster-3.jpg',
     eyebrow: 'Chat WhatsApp',
     title: 'Buket Thumbelina Sesuai Momenmu',
-    subtitle: 'Hubungi kami via WhatsApp untuk request buket sesuai keinginanmu.',
+    subtitle: 'Hubungi kami via WhatsApp untuk order buket thumbelina sesuai momenmu.',
     cta: 'Chat WhatsApp',
     href: 'https://wa.me/6285117606161',
   },

@@ -147,6 +147,7 @@ export default function Checkout({ onClose }) {
   const [manualPostalCode, setManualPostalCode] = useState('')
   const [manualAreaId, setManualAreaId] = useState('')
   const [manualAreaName, setManualAreaName] = useState('')
+  const [manualNeedsDetail, setManualNeedsDetail] = useState(false)
   const [manualLatitude, setManualLatitude] = useState(0)
   const [manualLongitude, setManualLongitude] = useState(0)
   const [manualNote, setManualNote] = useState('')
@@ -235,8 +236,6 @@ export default function Checkout({ onClose }) {
   }
   const emailFieldError = currentStep === 1 && emailTouched ? getEmailError(customerEmail) : null
   const displayError = error || emailFieldError
-  const canProceedStep1 = customerName.trim() && !getEmailError(customerEmail) && customerPhone.trim()
-
   const validateStep1 = () => {
     if (!customerName.trim()) return 'Nama harus diisi.'
     const emailError = getEmailError(customerEmail)
@@ -247,8 +246,9 @@ export default function Checkout({ onClose }) {
   }
 
   const validateStep2 = () => {
-    if (!activeAddress?.address_line?.trim()) return 'Alamat harus diisi.'
-    if (!/^\d{5}$/.test(activeAddress.postal_code?.trim() || '')) return 'Kode pos harus 5 digit.'
+    if (!activeAddress?.address_line?.trim()) return 'Pilih alamat dari hasil pencarian atau pakai alamat yang diketik.'
+    if (manualNeedsDetail && !manualNote.trim()) return 'Isi detail alamat/patokan agar kurir tidak nyasar.'
+    if (!/^\d{5}$/.test(activeAddress.postal_code?.trim() || '')) return 'Isi kode pos 5 digit agar ongkir bisa dihitung.'
     return null
   }
 
@@ -548,108 +548,72 @@ export default function Checkout({ onClose }) {
                   ) : (
                     <div className="space-y-4">
                       <AddressSearch
-                        onSelect={({ address, city, postalCode, areaId, areaName }) => {
+                        onSelect={({ address, city, postalCode, areaId, areaName, latitude, longitude, needsDetail }) => {
                           setManualAddress(address)
                           setManualCity(city)
+                          setManualPostalCode(postalCode || '')
                           setManualAreaId(areaId || '')
                           setManualAreaName(areaName || '')
-                          if (postalCode) {
-                            setManualPostalCode(postalCode)
-                            setRates([])
-                            setSelectedRate(null)
-                          }
+                          setManualNeedsDetail(Boolean(needsDetail || !postalCode))
+                          setManualLatitude(latitude || 0)
+                          setManualLongitude(longitude || 0)
+                          setRates([])
+                          setSelectedRate(null)
                           setError('')
+                        }}
+                        onClear={() => {
+                          setManualAddress('')
+                          setManualCity('')
+                          setManualPostalCode('')
+                          setManualAreaId('')
+                          setManualAreaName('')
+                          setManualNeedsDetail(false)
+                          setManualLatitude(0)
+                          setManualLongitude(0)
+                          setRates([])
+                          setSelectedRate(null)
                         }}
                       />
 
-                      {manualAreaName && (
-                        <p className="rounded-xl border border-accent/20 bg-accent/5 px-3 py-2 text-xs text-body">
-                          Area Biteship dipilih: <span className="font-medium text-heading">{manualAreaName}</span>
-                        </p>
-                      )}
-
-                      {manualLatitude !== 0 && (
-                        <p className="text-xs text-gray-500">
-                          Lokasi: {manualLatitude}, {manualLongitude}
-                        </p>
-                      )}
-
-                      {(manualAreaName || manualAddress) && !manualLatitude && (
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            try {
-                              const pos = await new Promise((resolve, reject) => {
-                                navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 })
-                              })
-                              setManualLatitude(pos.coords.latitude)
-                              setManualLongitude(pos.coords.longitude)
-                              setRates([])
-                              setSelectedRate(null)
-                            } catch {
-                              setError('Aktifkan lokasi browser atau isi koordinat manual untuk instant courier.')
-                            }
-                          }}
-                          className="text-xs text-accent hover:text-accent-hover underline"
-                        >
-                          Tandai Lokasi Saya (untuk Instant)
-                        </button>
-                      )}
-
-                      {/* Show textarea + details only after a search result is chosen */}
                       {manualAddress && (
                         <>
-                          <div>
-                            <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Detail Alamat (patokan, RT/RW, nomor)</label>
-                            <textarea
-                              value={manualAddress}
-                              onChange={(e) => setManualAddress(e.target.value)}
-                              className="h-20 w-full resize-none border border-border rounded-xl px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none transition-colors"
-                              placeholder="Detail tambahan: nomor rumah, RT/RW, patokan..."
-                            />
+                          <div className="rounded-xl border border-accent/20 bg-accent/5 px-3 py-2 text-xs text-body">
+                            <p className="font-medium text-heading">Alamat terpilih</p>
+                            <p className="mt-1 leading-relaxed">{manualAddress}</p>
+                            <p className="mt-1 text-text-muted">{manualCity || '-'} · {manualPostalCode || 'kode pos tidak tersedia'}</p>
+                            {manualAreaName && <p className="mt-1 text-text-muted">Area Biteship: {manualAreaName}</p>}
                           </div>
-                          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                            <div>
-                              <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Kota/Kabupaten</label>
-                              <input
-                                value={manualCity}
-                                onChange={(e) => setManualCity(e.target.value)}
-                                className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none transition-colors"
-                                placeholder="Contoh: Sleman"
-                              />
+                          {(manualNeedsDetail || !manualPostalCode) && (
+                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                              <div>
+                                <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Kota/Kabupaten</label>
+                                <input
+                                  value={manualCity}
+                                  onChange={(e) => { setManualCity(e.target.value); setRates([]); setSelectedRate(null) }}
+                                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none transition-colors"
+                                  placeholder="Contoh: Sleman"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Kode Pos</label>
+                                <input
+                                  inputMode="numeric"
+                                  maxLength="5"
+                                  value={manualPostalCode}
+                                  onChange={(e) => { setManualPostalCode(e.target.value.replace(/\D/g, '').slice(0, 5)); setRates([]); setSelectedRate(null); setError('') }}
+                                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none transition-colors"
+                                  placeholder="55284"
+                                />
+                              </div>
                             </div>
-                            <div>
-                              <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Kode Pos</label>
-                              <input
-                                required
-                                inputMode="numeric"
-                                maxLength="5"
-                                value={manualPostalCode}
-                                onChange={(e) => { setManualPostalCode(e.target.value.replace(/\D/g, '').slice(0, 5)); setManualAreaId(''); setManualAreaName(''); setError(''); setRates([]); setSelectedRate(null) }}
-                                className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none transition-colors"
-                                placeholder="55283"
-                              />
-                            </div>
-                          </div>
+                          )}
                           <div>
-                            <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Label</label>
-                            <select
-                              value={selectedAddress?.label || 'Rumah'}
-                              onChange={(e) => { if (selectedAddress) setSelectedAddress({ ...selectedAddress, label: e.target.value }) }}
-                              className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none transition-colors"
-                            >
-                              <option>Rumah</option>
-                              <option>Kantor</option>
-                              <option>Lainnya</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Catatan Kurir (opsional)</label>
+                            <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Detail Alamat / Patokan {manualNeedsDetail ? '(wajib)' : '(opsional)'}</label>
                             <input
                               value={manualNote}
                               onChange={(e) => setManualNote(e.target.value)}
                               className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none transition-colors"
-                              placeholder="Patokan, nama gedung, dll."
+                              placeholder="Nomor rumah/unit, RT/RW, patokan, nama gedung..."
                             />
                           </div>
                         </>
@@ -772,8 +736,7 @@ export default function Checkout({ onClose }) {
                   <button
                     type="button"
                     onClick={nextStep}
-                    disabled={currentStep === 1 && !canProceedStep1}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-heading text-white text-xs font-medium uppercase tracking-button hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-heading text-white text-xs font-medium uppercase tracking-button hover:bg-gray-800 transition-colors"
                   >
                     Lanjut ke {STEPS[currentStep]?.label || 'Selanjutnya'}
                   </button>

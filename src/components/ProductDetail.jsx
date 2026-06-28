@@ -12,7 +12,7 @@ import { fetchApprovedReviews, getReviewStats } from '../lib/reviews'
  * ProductDetailPage — full-page product detail (ZaskiaMecca-style).
  * - URL: /products/{slug}
  * - 2-col grid: gallery left, info right (info sticky on scroll)
- * - Tabs: Deskripsi | Material | Info Pengiriman
+ * - Tabs: Deskripsi | Info Pengiriman
  * - Breadcrumbs
  * - Sticky bottom add-to-cart bar (mobile only)
  * - Trust micro-badges
@@ -61,7 +61,6 @@ function Tabs({ product }) {
   const [active, setActive] = useState('description')
   const tabs = [
     { id: 'description', label: 'Deskripsi' },
-    { id: 'material', label: 'Material' },
     { id: 'shipping', label: 'Info Pengiriman' },
   ]
   return (
@@ -84,16 +83,6 @@ function Tabs({ product }) {
       <div className="py-5 sm:py-6 text-sm leading-7 text-body">
         {active === 'description' && (
           <p className="whitespace-pre-line">{product.description || 'Belum ada deskripsi untuk produk ini.'}</p>
-        )}
-        {active === 'material' && (
-          product.material ? (
-            <div className="space-y-2">
-              <p><span className="text-heading font-medium">Material:</span> {product.material}</p>
-              <p className="text-xs text-gray-500">Material info diambil langsung dari data produk.</p>
-            </div>
-          ) : (
-            <p className="text-gray-500">Info material belum tersedia untuk produk ini.</p>
-          )
         )}
         {active === 'shipping' && (
           <ul className="space-y-2 list-disc pl-5">
@@ -458,13 +447,6 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
                 <p className="text-xs text-gray-500 mt-1">*Harga mulai dari, tergantung variasi</p>
               )}
             </div>
-
-            {/* Material — only if real data */}
-            {product.material && (
-              <p className="mt-4 text-sm text-body">
-                <span className="text-heading font-medium">Material:</span> {product.material}
-              </p>
-            )}
 
             {/* Description preview */}
             <p className="mt-5 text-sm leading-7 text-body line-clamp-4">{product.description}</p>
