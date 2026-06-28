@@ -215,8 +215,8 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
  }
 
  return (
-  <div className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center overflow-y-auto p-4 py-8">
-   <div className="bg-white w-full max-w-2xl rounded-xl shadow-xl my-auto" onClick={e => e.stopPropagation()}>
+  <div className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center p-4 py-8">
+   <div className="bg-white w-full max-w-2xl rounded-xl shadow-xl my-auto max-h-full overflow-y-auto" onClick={e => e.stopPropagation()}>
     {/* Header */}
     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
      <h3 className="text-lg font-semibold text-gray-900">
