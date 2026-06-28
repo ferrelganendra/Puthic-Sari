@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { HiOutlineX, HiOutlinePhotograph, HiOutlineTrash, HiOutlineUpload } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
 
@@ -35,7 +35,8 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
  const [uploading, setUploading] = useState(false)
  const [saving, setSaving] = useState(false)
  const [error, setError] = useState('')
- const [dragOver, setDragOver] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef(null)
 
  useEffect(() => {
   fetchCategories()
@@ -344,10 +345,10 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
         border-2 border-dashed rounded-lg p-6 text-center transition-all cursor-pointer
         ${dragOver ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}
        `}
-       onClick={() => document.getElementById('file-upload').click()}
+       onClick={() => fileInputRef.current?.click()}
       >
        <input
-        id="file-upload"
+        ref={fileInputRef}
         type="file"
         multiple
         accept="image/*"
