@@ -2,25 +2,12 @@ import { useState, useEffect, Fragment } from 'react'
 import {
  HiOutlineRefresh, HiOutlineSearch, HiOutlineExternalLink,
  HiOutlineDocumentDownload, HiOutlineTruck, HiOutlineChevronDown,
- HiOutlineChevronRight, HiOutlineTrash, HiOutlineCube,
+ HiOutlineChevronRight, HiOutlineCube, HiOutlineXCircle,
 } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
 import { formatPrice } from '../../lib/pricing'
 
-const CHECKOUT_ORDER_STATUSES = [
- 'pending_payment',
- 'paid',
- 'processing',
- 'shipped',
- 'completed',
- 'cancelled',
- 'payment_failed',
- 'refunded',
-]
-const STATUS_OPTIONS = ['all', ...CHECKOUT_ORDER_STATUSES]
-
 const STATUS_LABEL = {
- all: 'Semua',
  pending_payment: 'Menunggu Bayar',
  paid: 'Dibayar',
  processing: 'Diproses',
@@ -31,15 +18,38 @@ const STATUS_LABEL = {
  refunded: 'Refunded',
 }
 
+const STATUS_FILTER_OPTIONS = [
+ 'all',
+ 'pending_payment',
+ 'paid',
+ 'processing',
+ 'shipped',
+ 'completed',
+ 'cancelled',
+]
+
 const STATUS_COLOR = {
- pending_payment: 'bg-yellow-50 text-yellow-700',
- payment_failed: 'bg-red-50 text-red-700',
- paid: 'bg-green-50 text-green-700',
- processing: 'bg-blue-50 text-blue-700',
- shipped: 'bg-purple-50 text-purple-700',
- completed: 'bg-green-50 text-green-800',
- cancelled: 'bg-red-50 text-red-700',
- refunded: 'bg-gray-100 text-gray-700',
+ pending_payment: 'bg-amber-50 text-amber-700 border border-amber-200',
+ payment_failed: 'bg-red-50 text-red-700 border border-red-200',
+ paid: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+ processing: 'bg-blue-50 text-blue-700 border border-blue-200',
+ shipped: 'bg-violet-50 text-violet-700 border border-violet-200',
+ completed: 'bg-emerald-50 text-emerald-800 border border-emerald-200',
+ cancelled: 'bg-gray-100 text-gray-500 border border-gray-200',
+ refunded: 'bg-gray-100 text-gray-500 border border-gray-200',
+}
+
+const SHIPMENT_STATUS_LABEL = {
+ created: 'Shipment Dibuat',
+ confirmed: 'Dikonfirmasi',
+ scheduled: 'Dijadwalkan',
+ allocated: 'Kurir Ditugaskan',
+ picking_up: 'Kurir Menuju',
+ picked: 'Paket Diambil',
+ in_transit: 'Dalam Perjalanan',
+ dropping_off: 'Sedang Diantar',
+ delivered: 'Terkirim',
+ cancelled: 'Dibatalkan',
 }
 
 const DATE_PRESETS = [
@@ -73,35 +83,68 @@ function getDateRange(preset) {
 }
 
 function StatusBadge({ status }) {
- const color = STATUS_COLOR[status] || 'bg-gray-100 text-gray-600'
+ const color = STATUS_COLOR[status] || 'bg-gray-100 text-gray-600 border border-gray-200'
  const label = STATUS_LABEL[status] || status || '-'
  return (
-  <span className={`inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full ${color}`}>
+  <span className={`inline-flex items-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap ${color}`}>
    {label}
   </span>
  )
 }
 
-function OrderDetail({ order, items }) {
- if (!items || items.length === 0) return null
+function ShipmentBadge({ status }) {
+ if (!status || status === 'not_created') return null
+ const label = SHIPMENT_STATUS_LABEL[status] || status
  return (
-  <div className="bg-gray-50 border-t border-gray-100 px-4 py-4">
-   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100 whitespace-nowrap">
+   📦 {label}
+  </span>
+ )
+}
+
+function ActionButton({ icon: Icon, label, onClick, loading, color = 'gray', disabled = false }) {
+ const colors = {
+  blue: 'text-blue-500 hover:bg-blue-50',
+  orange: 'text-orange-500 hover:bg-orange-50',
+  indigo: 'text-indigo-500 hover:bg-indigo-50',
+  green: 'text-green-500 hover:bg-green-50',
+  red: 'text-red-400 hover:bg-red-50 hover:text-red-600',
+ }
+ return (
+  <button
+   onClick={onClick}
+   disabled={disabled || loading}
+   className={`p-1.5 rounded-lg transition-colors disabled:opacity-40 ${colors[color]}`}
+   title={label}
+  >
+   <Icon className={`text-base ${loading ? 'animate-pulse' : ''}`} />
+  </button>
+ )
+}
+
+function OrderDetail({ order, items }) {
+ return (
+  <div className="bg-gray-50/80 border-t border-gray-100 px-6 py-5">
+   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
     {/* Items */}
     <div className="md:col-span-2">
-     <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Item yang dibeli</p>
-     <div className="space-y-2">
-      {items.map((item, idx) => (
-       <div key={idx} className="flex justify-between items-center bg-white rounded-lg px-3 py-2 border border-gray-100">
-        <div>
-         <p className="text-sm font-medium text-gray-800">{item.product_name}</p>
-         <p className="text-xs text-gray-400">{item.quantity}x {formatPrice(item.unit_price)}</p>
+     <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Item yang dibeli</p>
+     {items && items.length > 0 ? (
+      <div className="space-y-1.5">
+       {items.map((item, idx) => (
+        <div key={idx} className="flex justify-between items-center bg-white rounded-lg px-3 py-2.5 border border-gray-100">
+         <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-800 truncate">{item.product_name}</p>
+          <p className="text-xs text-gray-400">{item.quantity}x {formatPrice(item.unit_price)}</p>
+         </div>
+         <p className="text-sm font-semibold text-gray-700 ml-4">{formatPrice(item.subtotal_amount)}</p>
         </div>
-        <p className="text-sm font-semibold text-gray-700">{formatPrice(item.subtotal_amount)}</p>
-       </div>
-      ))}
-     </div>
-     <div className="mt-3 space-y-1">
+       ))}
+      </div>
+     ) : (
+      <p className="text-sm text-gray-400">Memuat item...</p>
+     )}
+     <div className="mt-3 bg-white rounded-lg border border-gray-100 px-3 py-2.5 space-y-1.5">
       <div className="flex justify-between text-xs text-gray-500">
        <span>Subtotal</span>
        <span>{formatPrice(order.subtotal_amount)}</span>
@@ -110,7 +153,7 @@ function OrderDetail({ order, items }) {
        <span>Ongkir ({order.selected_courier?.courierCompany} {order.selected_courier?.courierService})</span>
        <span>{formatPrice(order.shipping_amount)}</span>
       </div>
-      <div className="flex justify-between text-sm font-bold text-gray-900 pt-1 border-t border-gray-200">
+      <div className="flex justify-between text-sm font-bold text-gray-900 pt-1.5 border-t border-gray-100">
        <span>Total</span>
        <span>{formatPrice(order.total_amount)}</span>
       </div>
@@ -118,30 +161,39 @@ function OrderDetail({ order, items }) {
     </div>
 
     {/* Info */}
-    <div className="space-y-3">
+    <div className="space-y-4">
      <div>
-      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Alamat Pengiriman</p>
-      <p className="text-sm text-gray-700">{order.destination_address}</p>
+      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Alamat Pengiriman</p>
+      <p className="text-sm text-gray-700 leading-relaxed">{order.destination_address}</p>
       {order.destination_note && (
-       <p className="text-xs text-gray-400 mt-1">Catatan: {order.destination_note}</p>
+       <p className="text-xs text-gray-400 mt-1 italic">Catatan: {order.destination_note}</p>
       )}
      </div>
      {order.order_note && (
       <div>
-       <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Catatan Order</p>
+       <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Catatan Order</p>
        <p className="text-sm text-gray-700">{order.order_note}</p>
       </div>
      )}
      {order.biteship_waybill_id && (
       <div>
-       <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Resi</p>
-       <p className="text-sm font-mono text-blue-600">{order.biteship_waybill_id}</p>
+       <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Resi</p>
+       <p className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block">{order.biteship_waybill_id}</p>
       </div>
      )}
      <div>
-      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Status Pengiriman</p>
-      <p className="text-sm text-gray-700">{order.shipment_status || '-'}</p>
+      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Status Pengiriman</p>
+      <ShipmentBadge status={order.shipment_status} />
+      {!order.shipment_status || order.shipment_status === 'not_created' ? (
+       <p className="text-sm text-gray-400">-</p>
+      ) : null}
      </div>
+     {order.paid_at && (
+      <div>
+       <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Dibayar Pada</p>
+       <p className="text-sm text-gray-700">{new Date(order.paid_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+      </div>
+     )}
     </div>
    </div>
   </div>
@@ -162,10 +214,10 @@ export default function OrdersPage() {
  const fetchOrders = async () => {
   setLoading(true)
   setError('')
-   let query = supabase
-    .from('checkout_orders')
-    .select('*')
-    .order('created_at', { ascending: false })
+  let query = supabase
+   .from('checkout_orders')
+   .select('*')
+   .order('created_at', { ascending: false })
 
   if (statusFilter !== 'all') {
    query = query.eq('status', statusFilter)
@@ -202,7 +254,7 @@ export default function OrdersPage() {
   if (!search) return true
   const q = search.toLowerCase()
   return (
-   (o.order_number || o.orderNumber || '').toLowerCase().includes(q) ||
+   (o.order_number || '').toLowerCase().includes(q) ||
    (o.customer_name || '').toLowerCase().includes(q) ||
    (o.customer_email || '').toLowerCase().includes(q) ||
    (o.customer_phone || '').toLowerCase().includes(q)
@@ -215,16 +267,6 @@ export default function OrdersPage() {
   } else {
    setExpandedOrder(orderId)
    await fetchOrderItems(orderId)
-  }
- }
-
-  const updateStatus = async (id, newStatus) => {
-   const { error: updateErr } = await supabase.from('checkout_orders').update({ status: newStatus }).eq('id', id)
-
-  if (updateErr) {
-   setError(updateErr.message)
-  } else {
-   setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o))
   }
  }
 
@@ -284,9 +326,9 @@ export default function OrdersPage() {
   }
  }
 
- const handleDeleteOrder = async (orderId) => {
-  if (!window.confirm('Yakin ingin menghapus order ini? Status akan diubah ke Dibatalkan.')) return
-  setActionLoading(`delete-${orderId}`)
+ const handleCancelOrder = async (orderId) => {
+  if (!window.confirm('Batalkan order ini?')) return
+  setActionLoading(`cancel-${orderId}`)
   try {
    const { error: updateErr } = await supabase
     .from('checkout_orders')
@@ -295,7 +337,7 @@ export default function OrdersPage() {
    if (updateErr) throw updateErr
    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o))
   } catch (err) {
-   setError(err.message || 'Gagal menghapus order.')
+   setError(err.message || 'Gagal membatalkan order.')
   } finally {
    setActionLoading(null)
   }
@@ -309,214 +351,196 @@ export default function OrdersPage() {
   .filter(o => ['paid', 'processing', 'shipped', 'completed'].includes(o.status))
   .reduce((sum, o) => sum + (o.total_amount || 0), 0)
 
+ const isCancellable = (status) => ['pending_payment', 'paid', 'processing'].includes(status)
+ const canCreateShipment = (order) => !order.biteship_order_id && ['paid', 'pending_payment'].includes(order.status)
+ const canPrintLabel = (order) => order.biteship_order_id && ['processing', 'shipped'].includes(order.status)
+ const canPickup = (order) => order.biteship_order_id && order.status === 'processing' && !['picking_up', 'picked', 'in_transit', 'dropping_off', 'delivered'].includes(order.shipment_status)
+
  return (
-  <div>
-   {/* Controls */}
-   <div className="flex flex-col sm:flex-row gap-3 mb-4">
-    <div className="relative flex-1 max-w-xs">
-     <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+  <div className="space-y-4">
+   {/* Search + Filter bar */}
+   <div className="flex flex-col sm:flex-row gap-3">
+    <div className="relative flex-1 max-w-sm">
+     <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
      <input
       type="text"
       placeholder="Cari order, nama, email..."
       value={search}
       onChange={e => setSearch(e.target.value)}
-      className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 transition-all"
+      className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 transition-all"
      />
     </div>
-    <div className="flex gap-2 flex-wrap">
-     {STATUS_OPTIONS.map(s => (
+    <div className="flex items-center gap-1.5">
+     {STATUS_FILTER_OPTIONS.map(s => (
       <button
        key={s}
        onClick={() => setStatusFilter(s)}
-       className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-        statusFilter === s ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+       className={`px-2.5 py-1.5 text-[11px] font-semibold rounded-md transition-all ${
+        statusFilter === s ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'
        }`}
       >
-       {STATUS_LABEL[s]}
+       {s === 'all' ? 'Semua' : STATUS_LABEL[s]}
       </button>
      ))}
     </div>
     <button
      onClick={fetchOrders}
-     className="ml-auto p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+     className="p-2 text-gray-400 hover:text-gray-700 hover:bg-white rounded-lg transition-colors border border-gray-200"
      title="Refresh"
     >
-     <HiOutlineRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />
+     <HiOutlineRefresh className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
     </button>
    </div>
 
    {/* Date filter */}
-   <div className="flex gap-2 mb-4">
-    {DATE_PRESETS.map(p => (
-     <button
-      key={p.value}
-      onClick={() => setDatePreset(p.value)}
-      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all border ${
-       datePreset === p.value
-        ? 'bg-white border-gray-900 text-gray-900'
-        : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100'
-      }`}
-     >
-      {p.label}
-     </button>
-    ))}
+   <div className="flex items-center gap-2">
+    <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Periode</span>
+    <div className="flex gap-1">
+     {DATE_PRESETS.map(p => (
+      <button
+       key={p.value}
+       onClick={() => setDatePreset(p.value)}
+       className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-all ${
+        datePreset === p.value
+         ? 'bg-gray-900 text-white'
+         : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'
+       }`}
+      >
+       {p.label}
+      </button>
+     ))}
+    </div>
    </div>
 
    {/* Stats */}
-   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-     <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <p className="text-2xl font-bold text-gray-900">{filtered.length}</p>
-      <p className="text-xs text-gray-500 mt-1">Total Order</p>
-     </div>
-     <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <p className="text-2xl font-bold text-yellow-500">{filtered.filter(o => o.status === 'pending_payment').length}</p>
-      <p className="text-xs text-gray-500 mt-1">Menunggu Bayar</p>
-     </div>
-     <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <p className="text-2xl font-bold text-blue-500">{filtered.filter(o => o.status === 'processing' || o.status === 'paid').length}</p>
-      <p className="text-xs text-gray-500 mt-1">Perlu Dikirim</p>
-     </div>
-     <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <p className="text-2xl font-bold text-green-500">{formatPrice(totalRevenue)}</p>
-      <p className="text-xs text-gray-500 mt-1">Total Pendapatan</p>
-     </div>
+   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="bg-white rounded-xl border border-gray-200 p-4">
+     <p className="text-2xl font-bold text-gray-900">{filtered.length}</p>
+     <p className="text-xs text-gray-400 mt-0.5">Total Order</p>
+    </div>
+    <div className="bg-white rounded-xl border border-gray-200 p-4">
+     <p className="text-2xl font-bold text-amber-500">{filtered.filter(o => o.status === 'pending_payment').length}</p>
+     <p className="text-xs text-gray-400 mt-0.5">Menunggu Bayar</p>
+    </div>
+    <div className="bg-white rounded-xl border border-gray-200 p-4">
+     <p className="text-2xl font-bold text-blue-500">{filtered.filter(o => o.status === 'processing' || o.status === 'paid').length}</p>
+     <p className="text-xs text-gray-400 mt-0.5">Perlu Dikirim</p>
+    </div>
+    <div className="bg-white rounded-xl border border-gray-200 p-4">
+     <p className="text-2xl font-bold text-emerald-500">{formatPrice(totalRevenue)}</p>
+     <p className="text-xs text-gray-400 mt-0.5">Total Pendapatan</p>
+    </div>
    </div>
 
+   {/* Error */}
    {error && (
-    <div className="mb-4 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+    <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3">
      <p className="text-sm text-red-600">{error}</p>
     </div>
    )}
 
    {/* Table */}
    {loading ? (
-    <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-     <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full mx-auto" />
+    <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+     <div className="animate-spin w-7 h-7 border-2 border-gray-200 border-t-gray-700 rounded-full mx-auto" />
      <p className="text-sm text-gray-400 mt-3">Memuat pesanan...</p>
     </div>
    ) : filtered.length === 0 ? (
-    <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-     <p className="text-sm text-gray-500">Tidak ada pesanan ditemukan.</p>
+    <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+     <p className="text-sm text-gray-400">Tidak ada pesanan ditemukan.</p>
     </div>
    ) : (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
      <div className="overflow-x-auto">
       <table className="w-full">
        <thead>
-        <tr className="bg-gray-50 border-b border-gray-200">
-         <th className="w-8 py-3 px-2"></th>
-         <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Order</th>
-         <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Pelanggan</th>
-         <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
-         <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-         <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Waktu</th>
-         <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
+        <tr className="border-b border-gray-100">
+         <th className="w-10 py-3 px-2"></th>
+         <th className="text-left py-3 px-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Order</th>
+         <th className="text-left py-3 px-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">Pelanggan</th>
+         <th className="text-right py-3 px-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total</th>
+         <th className="text-center py-3 px-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+         <th className="text-left py-3 px-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden lg:table-cell">Waktu</th>
+         <th className="text-right py-3 px-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Aksi</th>
         </tr>
        </thead>
-       <tbody className="divide-y divide-gray-100">
+       <tbody className="divide-y divide-gray-50">
         {filtered.map(order => (
          <Fragment key={order.id}>
           <tr
-           className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+           className="hover:bg-gray-50/50 transition-colors cursor-pointer group"
            onClick={() => toggleExpand(order.id)}
           >
            <td className="py-3 px-2 text-center">
-            {expandedOrder === order.id
-             ? <HiOutlineChevronDown className="w-4 h-4 text-gray-400 inline" />
-             : <HiOutlineChevronRight className="w-4 h-4 text-gray-400 inline" />
-            }
+            <HiOutlineChevronRight className={`w-4 h-4 text-gray-300 inline transition-transform ${expandedOrder === order.id ? 'rotate-90' : ''}`} />
            </td>
            <td className="py-3 px-4">
-            <p className="font-mono text-xs font-semibold text-gray-800">{order.order_number || order.orderNumber || `#${order.id}`}</p>
-             {order.biteship_waybill_id && (
-              <p className="text-[11px] text-blue-500 mt-0.5">Resi: {order.biteship_waybill_id}</p>
-             )}
+            <p className="font-mono text-xs font-semibold text-gray-800">{order.order_number || `#${order.id.slice(0, 8)}`}</p>
+            {order.biteship_waybill_id && (
+             <p className="text-[10px] text-blue-500 mt-0.5 font-mono">Resi: {order.biteship_waybill_id}</p>
+            )}
            </td>
            <td className="py-3 px-4 hidden md:table-cell">
-            <p className="text-sm text-gray-700">{order.customer_name || '-'}</p>
-            <p className="text-xs text-gray-400">{order.customer_phone || order.customer_email || ''}</p>
+            <p className="text-sm text-gray-700 font-medium">{order.customer_name || '-'}</p>
+            <p className="text-[11px] text-gray-400">{order.customer_phone || order.customer_email || ''}</p>
            </td>
-           <td className="py-3 px-4">
+           <td className="py-3 px-4 text-right">
             <p className="text-sm font-semibold text-gray-900">{formatPrice(order.total_amount)}</p>
            </td>
            <td className="py-3 px-4 text-center">
             <StatusBadge status={order.status} />
            </td>
            <td className="py-3 px-4 hidden lg:table-cell">
-            <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
+            <p className="text-[11px] text-gray-400">{formatDate(order.created_at)}</p>
            </td>
            <td className="py-3 px-4">
-            <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
-             {/* Buat Shipment — paid tanpa shipment */}
-             {!order.biteship_order_id && (order.status === 'paid' || order.status === 'pending_payment') && (
-              <button
+            <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
+             {canCreateShipment(order) && (
+              <ActionButton
+               icon={HiOutlineCube}
+               label="Buat Shipment"
                onClick={() => handleCreateShipment(order.id)}
-               disabled={actionLoading === `shipment-${order.id}`}
-               className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-50"
-               title="Buat Shipment"
-              >
-               <HiOutlineCube className={`text-base ${actionLoading === `shipment-${order.id}` ? 'animate-pulse' : ''}`} />
-              </button>
+               loading={actionLoading === `shipment-${order.id}`}
+               color="indigo"
+              />
              )}
-
-             {/* Cetak Label — ada shipment, status processing/shipped */}
-             {order.biteship_order_id && (order.status === 'processing' || order.status === 'shipped') && (
-              <button
+             {canPrintLabel(order) && (
+              <ActionButton
+               icon={HiOutlineDocumentDownload}
+               label="Cetak Label"
                onClick={() => handlePrintLabel(order.id)}
-               disabled={actionLoading === `label-${order.id}`}
-               className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
-               title="Cetak Label"
-              >
-               <HiOutlineDocumentDownload className={`text-base ${actionLoading === `label-${order.id}` ? 'animate-pulse' : ''}`} />
-              </button>
+               loading={actionLoading === `label-${order.id}`}
+               color="blue"
+              />
              )}
-
-             {/* Atur Pickup — ada shipment, status processing, belum dipickup */}
-             {order.biteship_order_id && order.status === 'processing' && !['picking_up', 'picked', 'in_transit', 'dropping_off', 'delivered'].includes(order.shipment_status) && (
-              <button
+             {canPickup(order) && (
+              <ActionButton
+               icon={HiOutlineTruck}
+               label="Atur Pickup"
                onClick={() => handleSchedulePickup(order.id)}
-               disabled={actionLoading === `pickup-${order.id}`}
-               className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors disabled:opacity-50"
-               title="Atur Pickup"
-              >
-               <HiOutlineTruck className={`text-base ${actionLoading === `pickup-${order.id}` ? 'animate-pulse' : ''}`} />
-              </button>
+               loading={actionLoading === `pickup-${order.id}`}
+               color="orange"
+              />
              )}
-
-             {/* Status dropdown */}
-             <select
-              value={order.status || ''}
-              onChange={e => updateStatus(order.id, e.target.value)}
-              className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white text-gray-700"
-             >
-              {STATUS_OPTIONS.filter(s => s !== 'all').map(s => (
-               <option key={s} value={s}>{STATUS_LABEL[s]}</option>
-              ))}
-             </select>
-
-             {/* WhatsApp */}
              {order.customer_phone && (
               <a
                href={`https://wa.me/${order.customer_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Halo ${order.customer_name || ''}, update pesanan ${order.order_number || ''} Puthic Sari:`)}`}
                target="_blank"
                rel="noopener noreferrer"
                className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
-               title="Hubungi via WhatsApp"
+               title="WhatsApp"
               >
-               <HiOutlineExternalLink />
+               <HiOutlineExternalLink className="text-base" />
               </a>
              )}
-
-             {/* Hapus */}
-             {order.status !== 'cancelled' && (
-              <button
-               onClick={() => handleDeleteOrder(order.id)}
-               disabled={actionLoading === `delete-${order.id}`}
-               className="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors disabled:opacity-50"
-               title="Hapus Order"
-              >
-               <HiOutlineTrash className={`text-base ${actionLoading === `delete-${order.id}` ? 'animate-pulse' : ''}`} />
-              </button>
+             {isCancellable(order.status) && (
+              <ActionButton
+               icon={HiOutlineXCircle}
+               label="Batalkan"
+               onClick={() => handleCancelOrder(order.id)}
+               loading={actionLoading === `cancel-${order.id}`}
+               color="red"
+              />
              )}
             </div>
            </td>
@@ -533,8 +557,8 @@ export default function OrdersPage() {
        </tbody>
       </table>
      </div>
-     <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50">
-      <p className="text-xs text-gray-400">{filtered.length} dari {orders.length} pesanan</p>
+     <div className="px-4 py-2.5 border-t border-gray-100">
+      <p className="text-[11px] text-gray-400">{filtered.length} dari {orders.length} pesanan</p>
      </div>
     </div>
    )}
