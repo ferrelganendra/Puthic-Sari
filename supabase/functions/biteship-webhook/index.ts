@@ -144,25 +144,21 @@ async function isRecentDuplicate(
 
 // --- Main handler ---
 Deno.serve(async (req) => {
-  // Biteship verification: any request without valid signature = health check
-  // Accept GET, POST, any method — just return 200 OK with empty body
   const options = handleOptions(req)
   if (options) return options
 
-  const sigKey = Deno.env.get('BITESHIP_WEBHOOK_SIGNATURE_KEY')
-  const hasSignature = sigKey && req.headers.get(sigKey)
-
-  if (!hasSignature) {
-    // Verification or unknown request — return 200 with minimal JSON
-    return new Response('ok', {
-      status: 200,
-      headers: { 'content-type': 'text/plain; charset=utf-8' },
-    })
+  // Biteship verification: sends POST with empty body {} to check endpoint exists
+  // Real events always have an "event" field in the body
+  if (req.method !== 'POST') {
+    return new Response('ok', { status: 200, headers: { 'content-type': 'text/plain' } })
   }
 
-  // Only POST is valid for real webhook events
-  if (req.method !== 'POST') {
-    return jsonResponse({ success: false, error: 'Method tidak diizinkan.' }, 405)
+  const body = await readJson(req).catch(() => ({}))
+  const event = String(body.event || '').trim()
+
+  // No event field = Biteship verification → return 200
+  if (!event) {
+    return new Response('ok', { status: 200, headers: { 'content-type': 'text/plain' } })
   }
 
   const supabase = createSupabaseAdmin()
@@ -175,18 +171,10 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: false, error: 'Signature tidak valid.' }, 403)
     }
 
-    // 2. Parse payload
-    const payload = await readJson(req)
-    const event = String(payload.event || '').trim()
-
-    if (!event) {
-      return jsonResponse({ success: false, error: 'Field "event" wajib diisi.' }, 400)
-    }
-
-    // 3. Lookup order in our database
-    const { order, lookupMethod } = await lookupOrder(supabase, payload)
-    const biteshipOrderId = String(payload.order_id || '')
-    const payloadStatus = String(payload.status || '').trim() || null
+    // 2. Lookup order in our database
+    const { order, lookupMethod } = await lookupOrder(supabase, body)
+    const biteshipOrderId = String(body.order_id || '')
+    const payloadStatus = String(body.status || '').trim() || null
 
     // 4. Idempotency: check BEFORE logging, so we don't match the event we're about to insert
     if (order) {
@@ -202,7 +190,7 @@ Deno.serve(async (req) => {
       provider_order_id: biteshipOrderId || null,
       event_type: event,
       status: payloadStatus,
-      payload,
+      payload: body,
     })
 
     if (!order) {
@@ -219,11 +207,11 @@ Deno.serve(async (req) => {
     // 6. Route to handler based on event type
     switch (event) {
       case 'order.status':
-        return await handleOrderStatus(supabase, order, payload, payloadStatus)
+        return await handleOrderStatus(supabase, order, body, payloadStatus)
       case 'order.waybill_id':
-        return await handleOrderWaybill(supabase, order, payload, payloadStatus)
+        return await handleOrderWaybill(supabase, order, body, payloadStatus)
       case 'order.price':
-        return await handleOrderPrice(supabase, order, payload, payloadStatus)
+        return await handleOrderPrice(supabase, order, body, payloadStatus)
       default:
         console.warn('Biteship webhook: unknown event', { event })
         return jsonResponse({ success: true, status: 'unknown_event_logged' })
