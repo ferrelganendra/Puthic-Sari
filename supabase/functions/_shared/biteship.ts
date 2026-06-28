@@ -236,9 +236,13 @@ export async function createShipment(order: Record<string, unknown>, items: Arra
   })
 }
 
+function isTestId(id: string) {
+  return testModeEnabled() || /^test[-_]/i.test(id)
+}
+
 export async function getLabel(biteshipOrderId: string) {
-  if (testModeEnabled()) {
-    return { url: null, test_mode: true, message: 'Mode test — label tidak tersedia.' }
+  if (isTestId(biteshipOrderId)) {
+    return { url: null, test_mode: true, message: 'Label tidak tersedia di mode test. Gunakan API key production untuk label asli.' }
   }
 
   const data = await request(`/v1/orders/${biteshipOrderId}/label`, { method: 'GET' })
@@ -246,8 +250,8 @@ export async function getLabel(biteshipOrderId: string) {
 }
 
 export async function schedulePickup(biteshipOrderId: string) {
-  if (testModeEnabled()) {
-    return { status: 'pickup_scheduled', test_mode: true, message: 'Mode test — pickup tidak dijadwalkan secara nyata.' }
+  if (isTestId(biteshipOrderId)) {
+    return { status: 'pickup_scheduled', test_mode: true, message: 'Mode test — pickup tidak dijadwalkan. Gunakan API key production untuk pickup asli.' }
   }
 
   const data = await request(`/v1/orders/${biteshipOrderId}/pickup`, { method: 'POST', body: '{}' })
