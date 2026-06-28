@@ -80,7 +80,7 @@ export default function AddressSearch({ onSelect, onClear }) {
   }, [query, selectedName])
 
   const selectAddress = async ({ address, city = '', postalCode = '', latitude = 0, longitude = 0, needsDetail = false }) => {
-    const area = await searchBiteshipArea(address)
+    const area = needsDetail ? null : await searchBiteshipArea(address)
     setSelectedName(address)
     setQuery(address)
     setPlaces([])
@@ -155,9 +155,9 @@ export default function AddressSearch({ onSelect, onClear }) {
             </button>
           )) : (
             <div className="space-y-2 px-3 py-3 text-xs text-text-muted">
-              <p>Alamat belum ketemu di peta. Kamu tetap bisa pakai alamat yang diketik, lalu lengkapi kode pos dan detail kurir.</p>
+              <p>Alamat tidak ditemukan di peta. Gunakan alamat yang diketik, lalu lengkapi kode pos dan detail pengiriman.</p>
               <button type="button" onClick={selectTypedAddress} className="w-full rounded-lg border border-accent/40 px-3 py-2 text-left text-sm font-medium text-heading hover:bg-accent/5">
-                Pakai alamat ini: {query.trim()}
+                Gunakan alamat ini: {query.trim()}
               </button>
             </div>
           )}

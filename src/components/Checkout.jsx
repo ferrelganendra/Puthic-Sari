@@ -247,7 +247,7 @@ export default function Checkout({ onClose }) {
 
   const validateStep2 = () => {
     if (!activeAddress?.address_line?.trim()) return 'Pilih alamat dari hasil pencarian atau pakai alamat yang diketik.'
-    if (manualNeedsDetail && !manualNote.trim()) return 'Isi detail alamat/patokan agar kurir tidak nyasar.'
+    if (manualNeedsDetail && !manualNote.trim()) return 'Lengkapi detail alamat agar pengiriman dapat diproses.'
     if (!/^\d{5}$/.test(activeAddress.postal_code?.trim() || '')) return 'Isi kode pos 5 digit agar ongkir bisa dihitung.'
     return null
   }
@@ -580,7 +580,7 @@ export default function Checkout({ onClose }) {
                           <div className="rounded-xl border border-accent/20 bg-accent/5 px-3 py-2 text-xs text-body">
                             <p className="font-medium text-heading">Alamat terpilih</p>
                             <p className="mt-1 leading-relaxed">{manualAddress}</p>
-                            <p className="mt-1 text-text-muted">{manualCity || '-'} · {manualPostalCode || 'kode pos tidak tersedia'}</p>
+                            <p className="mt-1 text-text-muted">{manualCity || 'Kota/kabupaten belum diisi'} · {manualPostalCode || 'Kode pos belum diisi'}</p>
                             {manualAreaName && <p className="mt-1 text-text-muted">Area Biteship: {manualAreaName}</p>}
                           </div>
                           {(manualNeedsDetail || !manualPostalCode) && (
@@ -608,12 +608,12 @@ export default function Checkout({ onClose }) {
                             </div>
                           )}
                           <div>
-                            <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Detail Alamat / Patokan {manualNeedsDetail ? '(wajib)' : '(opsional)'}</label>
+                            <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Detail Pengiriman {manualNeedsDetail ? '(Wajib)' : '(Opsional)'}</label>
                             <input
                               value={manualNote}
                               onChange={(e) => setManualNote(e.target.value)}
                               className="w-full border border-border rounded-xl px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none transition-colors"
-                              placeholder="Nomor rumah/unit, RT/RW, patokan, nama gedung..."
+                              placeholder="Nomor rumah/unit, RT/RW, patokan, atau nama gedung"
                             />
                           </div>
                         </>
