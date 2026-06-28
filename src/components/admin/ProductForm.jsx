@@ -334,36 +334,34 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
      </div>
 
      {/* Upload Foto */}
-     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">Foto Produk</label>
-      <label
-       htmlFor="product-file-upload"
-       onDrop={handleDrop}
-       onDragOver={handleDragOver}
-       onDragLeave={handleDragLeave}
-       className="block border-2 border-dashed rounded-lg p-6 text-center transition-all cursor-pointer border-gray-200 hover:border-gray-300"
-      >
-       <input
-        id="product-file-upload"
-        type="file"
-        multiple
-        accept="image/*"
-        onChange={handleFileSelect}
-        className="sr-only"
-       />
-       {uploading ? (
-        <div className="flex flex-col items-center gap-2">
-         <div className="animate-spin w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full"></div>
-         <p className="text-sm text-gray-500">Mengupload...</p>
-        </div>
-       ) : (
-        <div className="flex flex-col items-center gap-2">
-         <HiOutlineUpload className="text-2xl text-gray-400" />
-         <p className="text-sm text-gray-500">Drag & drop foto di sini, atau <span className="text-gray-900 font-medium">klik untuk pilih</span></p>
-         <p className="text-xs text-gray-400">PNG, JPG, JPEG (maks. 5MB per file)</p>
-        </div>
-       )}
-      </label>
+      <div>
+       <label className="block text-sm font-medium text-gray-700 mb-1.5">Foto Produk</label>
+       <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className="relative border-2 border-dashed rounded-lg p-6 text-center transition-all cursor-pointer border-gray-200 hover:border-gray-300"
+       >
+        <input
+         type="file"
+         multiple
+         accept="image/*"
+         onChange={handleFileSelect}
+         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
+        {uploading ? (
+         <div className="flex flex-col items-center gap-2">
+          <div className="animate-spin w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full"></div>
+          <p className="text-sm text-gray-500">Mengupload...</p>
+         </div>
+        ) : (
+         <div className="flex flex-col items-center gap-2">
+          <HiOutlineUpload className="text-2xl text-gray-400" />
+          <p className="text-sm text-gray-500">Drag & drop foto di sini, atau <span className="text-gray-900 font-medium">klik untuk pilih</span></p>
+          <p className="text-xs text-gray-400">PNG, JPG, JPEG (maks. 5MB per file)</p>
+         </div>
+        )}
+       </div>
 
       {/* Image previews */}
       {form.images.length > 0 && (
