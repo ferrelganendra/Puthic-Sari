@@ -36,7 +36,7 @@ const FALLBACK_SLIDES = [
     src: '/posters/poster-3.jpg',
     mobileSrc: '/posters/poster-3.jpg',
     eyebrow: 'Chat WhatsApp',
-    title: 'Buket Custom Sesuai Momenmu',
+    title: 'Buket Thumbelina Sesuai Momenmu',
     subtitle: 'Hubungi kami via WhatsApp untuk request buket sesuai keinginanmu.',
     cta: 'Chat WhatsApp',
     href: 'https://wa.me/6285117606161',
