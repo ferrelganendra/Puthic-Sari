@@ -152,6 +152,12 @@ Deno.serve(async (req) => {
     return jsonResponse({ success: false, error: 'Method tidak diizinkan.' }, 405)
   }
 
+  // Biteship verification: POST without signature = health check, return 200
+  const sigKey = Deno.env.get('BITESHIP_WEBHOOK_SIGNATURE_KEY')
+  if (sigKey && !req.headers.get(sigKey)) {
+    return jsonResponse({ success: true, status: 'ok' })
+  }
+
   const supabase = createSupabaseAdmin()
 
   try {
