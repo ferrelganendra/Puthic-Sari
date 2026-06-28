@@ -1,9 +1,6 @@
 import { useState, useEffect, Fragment } from 'react'
-import {
- HiOutlineRefresh, HiOutlineSearch, HiOutlineExternalLink,
- HiOutlineDocumentDownload, HiOutlineTruck, HiOutlineChevronRight,
- HiOutlineCube, HiOutlineXCircle, HiOutlineTrash,
-} from 'react-icons/hi'
+import { HiOutlineRefresh, HiOutlineSearch, HiOutlineChevronRight } from 'react-icons/hi'
+import { FaWhatsapp, FaBox, FaFileDownload, FaTruck, FaBan, FaTrashAlt } from 'react-icons/fa'
 import { supabase } from '../../lib/supabase'
 import { formatPrice } from '../../lib/pricing'
 
@@ -446,33 +443,33 @@ export default function OrdersPage() {
             <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
              {/* Buat Shipment — order paid tanpa shipment */}
              {!order.biteship_order_id && ['paid', 'pending_payment'].includes(order.status) && (
-              <ActionButton icon={HiOutlineCube} label="Buat Shipment — klik untuk membuat pengiriman ke kurir"
+              <ActionButton icon={FaBox} label="Buat Shipment — klik untuk membuat pengiriman ke kurir"
                onClick={() => handleCreateShipment(order.id)} loading={actionLoading === `shipment-${order.id}`} color="indigo" />
              )}
              {/* Cetak Label */}
              {order.biteship_order_id && ['processing', 'shipped'].includes(order.status) && (
-              <ActionButton icon={HiOutlineDocumentDownload} label="Cetak Label Pengiriman"
+              <ActionButton icon={FaFileDownload} label="Cetak Label Pengiriman"
                onClick={() => handlePrintLabel(order.id)} loading={actionLoading === `label-${order.id}`} color="blue" />
              )}
              {/* Atur Pickup */}
              {order.biteship_order_id && order.status === 'processing' && !['picking_up', 'picked', 'in_transit', 'dropping_off', 'delivered'].includes(order.shipment_status) && (
-              <ActionButton icon={HiOutlineTruck} label="Jadwalkan Kurir Jemput Paket"
+              <ActionButton icon={FaTruck} label="Jadwalkan Kurir Jemput Paket"
                onClick={() => handleSchedulePickup(order.id)} loading={actionLoading === `pickup-${order.id}`} color="orange" />
              )}
              {/* WhatsApp */}
              {order.customer_phone && (
               <a href={`https://wa.me/${order.customer_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Halo ${order.customer_name || ''}, update pesanan ${order.order_number || ''} Puthic Sari:`)}`}
                target="_blank" rel="noopener noreferrer" className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg transition-colors" title="Hubungi WhatsApp">
-               <HiOutlineExternalLink className="text-base" />
+               <FaWhatsapp className="text-base" />
               </a>
              )}
              {/* Batalkan — hanya untuk order aktif */}
              {['pending_payment', 'paid', 'processing'].includes(order.status) && (
-              <ActionButton icon={HiOutlineXCircle} label="Batalkan Order"
+              <ActionButton icon={FaBan} label="Batalkan Order"
                onClick={() => handleCancelOrder(order.id)} loading={actionLoading === `cancel-${order.id}`} color="red" />
              )}
              {/* Hapus permanen — semua order */}
-             <ActionButton icon={HiOutlineTrash} label="Hapus Permanen"
+             <ActionButton icon={FaTrashAlt} label="Hapus Permanen"
               onClick={() => handleDeleteOrder(order.id)} loading={actionLoading === `delete-${order.id}`} color="red" />
             </div>
            </td>
