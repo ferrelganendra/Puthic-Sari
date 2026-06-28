@@ -15,8 +15,8 @@ export const infoPages = {
   eyebrow: 'Puthic Sari',
   title: 'We Sell the Sign of Love.',
   intro: 'Hadiah bukan tentang harga, tapi tentang niat dan makna. Setiap buket kami rangkai dengan ketelitian dan cinta. Untuk perayaan kecil atau besar, kami siap bantu kamu membuatnya berkesan.',
-  heroImage: siteAssetUrl('/footer/florist-table-wide.jfif'),
-  heroAlt: 'Proses merangkai bunga di meja florist',
+   heroImage: siteAssetUrl('/footer/founder-graduation.jpeg'),
+   heroAlt: 'Founder Puthic Sari saat wisuda',
   quote: 'Setiap bunga memiliki makna, dan tugas kami adalah membantu menyampaikan perasaan itu dengan cara yang paling indah.',
   quoteBy: 'Sisi',
   sections: [
