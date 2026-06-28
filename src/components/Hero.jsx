@@ -254,7 +254,7 @@ export default function Hero() {
 
                 {/* Text overlay */}
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+                  <div className="w-full max-w-7xl mx-auto px-10 sm:px-8 lg:px-12">
                     <div className="max-w-lg">
                       {slide.eyebrow && (
                         <p className="text-[11px] sm:text-xs uppercase tracking-eyebrow font-semibold text-white/80 mb-1.5 sm:mb-2">
@@ -262,7 +262,7 @@ export default function Hero() {
                         </p>
                       )}
                       {slide.title && (
-                        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-medium text-white leading-tight">
+                        <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-display font-medium text-white leading-tight">
                           {slide.title}
                         </h2>
                       )}

@@ -160,7 +160,7 @@ function BestSellerHero({ onClick }) {
         </span>
 
           <div className="absolute inset-y-0 left-0 flex items-center p-5 sm:p-7">
-          <div className="max-w-md">
+          <div className="max-w-md mt-8 sm:mt-0">
             <h3 className="font-display text-lg sm:text-2xl md:text-3xl font-semibold text-white leading-tight">
               Paling Diminati
             </h3>
