@@ -44,8 +44,8 @@ export const infoPages = {
   eyebrow: 'Puthic Sari',
   title: 'Florist dengan Sentuhan Personal.',
   intro: 'Puthic Sari adalah brand florist yang menghadirkan rangkaian bunga dengan sentuhan elegan, hangat, dan personal. Kami memadukan seni merangkai bunga dengan detail visual modern agar setiap produk tidak hanya terlihat cantik, tetapi juga memiliki karakter dan emosi di dalamnya.',
-  heroImage: siteAssetUrl('/footer/founder-graduation.jpeg'),
-  heroAlt: 'Founder Puthic Sari',
+   heroImage: siteAssetUrl('/footer/logo-puthic-sari.jpeg'),
+   heroAlt: 'Logo Puthic Sari',
   quote: null,
   quoteBy: null,
   sections: [
