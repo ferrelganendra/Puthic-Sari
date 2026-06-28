@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { HiOutlineRefresh, HiOutlineSearch, HiOutlineExternalLink } from 'react-icons/hi'
+import { useState, useEffect, Fragment } from 'react'
+import { HiOutlineRefresh, HiOutlineSearch, HiOutlineExternalLink, HiOutlineDocumentDownload, HiOutlineTruck, HiOutlineChevronDown, HiOutlineChevronRight } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
 import { formatPrice } from '../../lib/pricing'
 
@@ -48,12 +48,81 @@ function StatusBadge({ status }) {
  )
 }
 
+function OrderDetail({ order, items }) {
+ if (!items || items.length === 0) return null
+ return (
+  <div className="bg-gray-50 border-t border-gray-100 px-4 py-4">
+   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {/* Items */}
+    <div className="md:col-span-2">
+     <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Item yang dibeli</p>
+     <div className="space-y-2">
+      {items.map((item, idx) => (
+       <div key={idx} className="flex justify-between items-center bg-white rounded-lg px-3 py-2 border border-gray-100">
+        <div>
+         <p className="text-sm font-medium text-gray-800">{item.product_name}</p>
+         <p className="text-xs text-gray-400">{item.quantity}x {formatPrice(item.unit_price)}</p>
+        </div>
+        <p className="text-sm font-semibold text-gray-700">{formatPrice(item.subtotal_amount)}</p>
+       </div>
+      ))}
+     </div>
+     <div className="mt-3 space-y-1">
+      <div className="flex justify-between text-xs text-gray-500">
+       <span>Subtotal</span>
+       <span>{formatPrice(order.subtotal_amount)}</span>
+      </div>
+      <div className="flex justify-between text-xs text-gray-500">
+       <span>Ongkir ({order.selected_courier?.courierCompany} {order.selected_courier?.courierService})</span>
+       <span>{formatPrice(order.shipping_amount)}</span>
+      </div>
+      <div className="flex justify-between text-sm font-bold text-gray-900 pt-1 border-t border-gray-200">
+       <span>Total</span>
+       <span>{formatPrice(order.total_amount)}</span>
+      </div>
+     </div>
+    </div>
+
+    {/* Info */}
+    <div className="space-y-3">
+     <div>
+      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Alamat Pengiriman</p>
+      <p className="text-sm text-gray-700">{order.destination_address}</p>
+      {order.destination_note && (
+       <p className="text-xs text-gray-400 mt-1">Catatan: {order.destination_note}</p>
+      )}
+     </div>
+     {order.order_note && (
+      <div>
+       <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Catatan Order</p>
+       <p className="text-sm text-gray-700">{order.order_note}</p>
+      </div>
+     )}
+     {order.biteship_waybill_id && (
+      <div>
+       <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Resi</p>
+       <p className="text-sm font-mono text-blue-600">{order.biteship_waybill_id}</p>
+      </div>
+     )}
+     <div>
+      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Status Pengiriman</p>
+      <p className="text-sm text-gray-700">{order.shipment_status || '-'}</p>
+     </div>
+    </div>
+   </div>
+  </div>
+ )
+}
+
 export default function OrdersPage() {
  const [orders, setOrders] = useState([])
+ const [orderItems, setOrderItems] = useState({})
  const [loading, setLoading] = useState(true)
  const [statusFilter, setStatusFilter] = useState('all')
  const [search, setSearch] = useState('')
  const [error, setError] = useState('')
+ const [expandedOrder, setExpandedOrder] = useState(null)
+ const [actionLoading, setActionLoading] = useState(null)
 
  const fetchOrders = async () => {
   setLoading(true)
@@ -62,7 +131,6 @@ export default function OrdersPage() {
     .from('checkout_orders')
     .select('*')
     .order('created_at', { ascending: false })
-
 
   if (statusFilter !== 'all') {
    query = query.eq('status', statusFilter)
@@ -79,6 +147,15 @@ export default function OrdersPage() {
   setLoading(false)
  }
 
+ const fetchOrderItems = async (orderId) => {
+  if (orderItems[orderId]) return
+  const { data } = await supabase
+   .from('checkout_order_items')
+   .select('*')
+   .eq('order_id', orderId)
+  if (data) setOrderItems(prev => ({ ...prev, [orderId]: data }))
+ }
+
  useEffect(() => { fetchOrders() }, [statusFilter])
 
  const filtered = orders.filter(o => {
@@ -92,6 +169,15 @@ export default function OrdersPage() {
   )
  })
 
+ const toggleExpand = async (orderId) => {
+  if (expandedOrder === orderId) {
+   setExpandedOrder(null)
+  } else {
+   setExpandedOrder(orderId)
+   await fetchOrderItems(orderId)
+  }
+ }
+
   const updateStatus = async (id, newStatus) => {
    const { error: updateErr } = await supabase.from('checkout_orders').update({ status: newStatus }).eq('id', id)
 
@@ -102,9 +188,53 @@ export default function OrdersPage() {
   }
  }
 
+ const handlePrintLabel = async (orderId) => {
+  setActionLoading(`label-${orderId}`)
+  try {
+   const { data, error: fnErr } = await supabase.functions.invoke('print-label', { body: { orderId } })
+   if (fnErr) throw fnErr
+   if (!data.success) throw new Error(data.error)
+
+   if (data.label?.url) {
+    window.open(data.label.url, '_blank')
+   } else if (data.label?.test_mode) {
+    alert(data.label.message || 'Mode test — label tidak tersedia.')
+   } else {
+    alert('Label tidak tersedia. Cek dashboard Biteship.')
+   }
+  } catch (err) {
+   alert(err.message || 'Gagal mengambil label.')
+  } finally {
+   setActionLoading(null)
+  }
+ }
+
+ const handleSchedulePickup = async (orderId) => {
+  setActionLoading(`pickup-${orderId}`)
+  try {
+   const { data, error: fnErr } = await supabase.functions.invoke('schedule-pickup', { body: { orderId } })
+   if (fnErr) throw fnErr
+   if (!data.success) throw new Error(data.error)
+
+   if (data.pickup?.test_mode) {
+    alert(data.pickup.message || 'Mode test — pickup tidak dijadwalkan.')
+   } else {
+    alert('Pickup berhasil dijadwalkan!')
+   }
+  } catch (err) {
+   alert(err.message || 'Gagal menjadwalkan pickup.')
+  } finally {
+   setActionLoading(null)
+  }
+ }
+
  const formatDate = (iso) => new Date(iso).toLocaleDateString('id-ID', {
   day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
  })
+
+ const totalRevenue = orders
+  .filter(o => ['paid', 'processing', 'shipped', 'completed'].includes(o.status))
+  .reduce((sum, o) => sum + (o.total_amount || 0), 0)
 
  return (
   <div>
@@ -154,13 +284,12 @@ export default function OrdersPage() {
      </div>
      <div className="bg-white rounded-lg border border-gray-200 p-4">
       <p className="text-2xl font-bold text-blue-500">{orders.filter(o => o.status === 'processing' || o.status === 'paid').length}</p>
-      <p className="text-xs text-gray-500 mt-1">Diproses</p>
+      <p className="text-xs text-gray-500 mt-1">Perlu Dikirim</p>
      </div>
      <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <p className="text-2xl font-bold text-green-500">{orders.filter(o => o.status === 'completed').length}</p>
-      <p className="text-xs text-gray-500 mt-1">Selesai</p>
+      <p className="text-2xl font-bold text-green-500">{formatPrice(totalRevenue)}</p>
+      <p className="text-xs text-gray-500 mt-1">Total Pendapatan</p>
      </div>
-
    </div>
 
    {error && (
@@ -185,6 +314,7 @@ export default function OrdersPage() {
       <table className="w-full">
        <thead>
         <tr className="bg-gray-50 border-b border-gray-200">
+         <th className="w-8 py-3 px-2"></th>
          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Order</th>
          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Pelanggan</th>
          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
@@ -195,53 +325,96 @@ export default function OrdersPage() {
        </thead>
        <tbody className="divide-y divide-gray-100">
         {filtered.map(order => (
-         <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
-          <td className="py-3 px-4">
-           <p className="font-mono text-xs font-semibold text-gray-800">{order.order_number || order.orderNumber || `#${order.id}`}</p>
-            {order.biteship_waybill_id && (
-             <p className="text-[11px] text-blue-500 mt-0.5">Resi: {order.biteship_waybill_id}</p>
-            )}
-
-          </td>
-          <td className="py-3 px-4 hidden md:table-cell">
-           <p className="text-sm text-gray-700">{order.customer_name || '-'}</p>
-           <p className="text-xs text-gray-400">{order.customer_phone || order.customer_email || ''}</p>
-          </td>
-          <td className="py-3 px-4">
+         <Fragment key={order.id}>
+          <tr
+           className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+           onClick={() => toggleExpand(order.id)}
+          >
+           <td className="py-3 px-2 text-center">
+            {expandedOrder === order.id
+             ? <HiOutlineChevronDown className="w-4 h-4 text-gray-400 inline" />
+             : <HiOutlineChevronRight className="w-4 h-4 text-gray-400 inline" />
+            }
+           </td>
+           <td className="py-3 px-4">
+            <p className="font-mono text-xs font-semibold text-gray-800">{order.order_number || order.orderNumber || `#${order.id}`}</p>
+             {order.biteship_waybill_id && (
+              <p className="text-[11px] text-blue-500 mt-0.5">Resi: {order.biteship_waybill_id}</p>
+             )}
+           </td>
+           <td className="py-3 px-4 hidden md:table-cell">
+            <p className="text-sm text-gray-700">{order.customer_name || '-'}</p>
+            <p className="text-xs text-gray-400">{order.customer_phone || order.customer_email || ''}</p>
+           </td>
+           <td className="py-3 px-4">
             <p className="text-sm font-semibold text-gray-900">{formatPrice(order.total_amount)}</p>
+           </td>
+           <td className="py-3 px-4 text-center">
+            <StatusBadge status={order.status} />
+           </td>
+           <td className="py-3 px-4 hidden lg:table-cell">
+            <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
+           </td>
+           <td className="py-3 px-4">
+            <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
+             {/* Cetak Label */}
+             {order.biteship_order_id && (order.status === 'processing' || order.status === 'shipped') && (
+              <button
+               onClick={() => handlePrintLabel(order.id)}
+               disabled={actionLoading === `label-${order.id}`}
+               className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+               title="Cetak Label"
+              >
+               <HiOutlineDocumentDownload className={`text-base ${actionLoading === `label-${order.id}` ? 'animate-pulse' : ''}`} />
+              </button>
+             )}
 
-          </td>
-          <td className="py-3 px-4 text-center">
-           <StatusBadge status={order.status} />
-          </td>
-          <td className="py-3 px-4 hidden lg:table-cell">
-           <p className="text-xs text-gray-500">{formatDate(order.created_at)}</p>
-          </td>
-          <td className="py-3 px-4">
-           <div className="flex items-center justify-end gap-2">
-            <select
-             value={order.status || ''}
-             onChange={e => updateStatus(order.id, e.target.value)}
-             className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white text-gray-700"
-            >
-             {STATUS_OPTIONS.filter(s => s !== 'all').map(s => (
-              <option key={s} value={s}>{STATUS_LABEL[s]}</option>
-             ))}
-            </select>
-            {order.customer_phone && (
-             <a
-              href={`https://wa.me/${order.customer_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Halo ${order.customer_name || ''}, update pesanan ${order.order_number || ''} Puthic Sari:`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
-              title="Hubungi via WhatsApp"
+             {/* Atur Pickup */}
+             {order.biteship_order_id && order.status === 'processing' && order.shipment_status !== 'picking_up' && order.shipment_status !== 'picked' && order.shipment_status !== 'in_transit' && (
+              <button
+               onClick={() => handleSchedulePickup(order.id)}
+               disabled={actionLoading === `pickup-${order.id}`}
+               className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors disabled:opacity-50"
+               title="Atur Pickup"
+              >
+               <HiOutlineTruck className={`text-base ${actionLoading === `pickup-${order.id}` ? 'animate-pulse' : ''}`} />
+              </button>
+             )}
+
+             {/* Status dropdown */}
+             <select
+              value={order.status || ''}
+              onChange={e => updateStatus(order.id, e.target.value)}
+              className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white text-gray-700"
              >
-              <HiOutlineExternalLink />
-             </a>
-            )}
-           </div>
-          </td>
-         </tr>
+              {STATUS_OPTIONS.filter(s => s !== 'all').map(s => (
+               <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+              ))}
+             </select>
+
+             {/* WhatsApp */}
+             {order.customer_phone && (
+              <a
+               href={`https://wa.me/${order.customer_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Halo ${order.customer_name || ''}, update pesanan ${order.order_number || ''} Puthic Sari:`)}`}
+               target="_blank"
+               rel="noopener noreferrer"
+               className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
+               title="Hubungi via WhatsApp"
+              >
+               <HiOutlineExternalLink />
+              </a>
+             )}
+            </div>
+           </td>
+          </tr>
+          {expandedOrder === order.id && (
+           <tr>
+            <td colSpan={7} className="p-0">
+             <OrderDetail order={order} items={orderItems[order.id]} />
+            </td>
+           </tr>
+          )}
+         </Fragment>
         ))}
        </tbody>
       </table>

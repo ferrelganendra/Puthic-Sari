@@ -235,3 +235,21 @@ export async function createShipment(order: Record<string, unknown>, items: Arra
     }),
   })
 }
+
+export async function getLabel(biteshipOrderId: string) {
+  if (testModeEnabled()) {
+    return { url: null, test_mode: true, message: 'Mode test — label tidak tersedia.' }
+  }
+
+  const data = await request(`/v1/orders/${biteshipOrderId}/label`, { method: 'GET' })
+  return data
+}
+
+export async function schedulePickup(biteshipOrderId: string) {
+  if (testModeEnabled()) {
+    return { status: 'pickup_scheduled', test_mode: true, message: 'Mode test — pickup tidak dijadwalkan secara nyata.' }
+  }
+
+  const data = await request(`/v1/orders/${biteshipOrderId}/pickup`, { method: 'POST', body: '{}' })
+  return data
+}
