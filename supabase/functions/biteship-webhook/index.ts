@@ -144,18 +144,25 @@ async function isRecentDuplicate(
 
 // --- Main handler ---
 Deno.serve(async (req) => {
-  // Accept server-to-server POST from Biteship (no origin header needed)
-  // Also handle OPTIONS for safety (some HTTP clients send preflight)
+  // Biteship verification: any request without valid signature = health check
+  // Accept GET, POST, any method — just return 200 OK with empty body
   const options = handleOptions(req)
   if (options) return options
-  if (req.method !== 'POST') {
-    return jsonResponse({ success: false, error: 'Method tidak diizinkan.' }, 405)
+
+  const sigKey = Deno.env.get('BITESHIP_WEBHOOK_SIGNATURE_KEY')
+  const hasSignature = sigKey && req.headers.get(sigKey)
+
+  if (!hasSignature) {
+    // Verification or unknown request — return 200 with minimal JSON
+    return new Response('ok', {
+      status: 200,
+      headers: { 'content-type': 'text/plain; charset=utf-8' },
+    })
   }
 
-  // Biteship verification: POST without signature = health check, return 200
-  const sigKey = Deno.env.get('BITESHIP_WEBHOOK_SIGNATURE_KEY')
-  if (sigKey && !req.headers.get(sigKey)) {
-    return jsonResponse({ success: true, status: 'ok' })
+  // Only POST is valid for real webhook events
+  if (req.method !== 'POST') {
+    return jsonResponse({ success: false, error: 'Method tidak diizinkan.' }, 405)
   }
 
   const supabase = createSupabaseAdmin()
