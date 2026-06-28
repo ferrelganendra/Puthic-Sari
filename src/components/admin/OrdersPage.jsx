@@ -459,8 +459,9 @@ export default function OrdersPage() {
              {/* WhatsApp */}
              {order.customer_phone && (
               <a href={`https://wa.me/${order.customer_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Halo ${order.customer_name || ''}, update pesanan ${order.order_number || ''} Puthic Sari:`)}`}
-               target="_blank" rel="noopener noreferrer" className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg transition-colors" title="Hubungi WhatsApp">
-               <FaWhatsapp className="text-base" />
+               target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-green-600 bg-green-50 hover:bg-green-100 border border-green-200 rounded-md transition-colors" title="Hubungi WhatsApp">
+               <FaWhatsapp className="text-sm" />
+               <span>WA</span>
               </a>
              )}
              {/* Batalkan — hanya untuk order aktif */}
