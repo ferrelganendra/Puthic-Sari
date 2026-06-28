@@ -1,8 +1,8 @@
 import { useState, useEffect, Fragment } from 'react'
 import {
  HiOutlineRefresh, HiOutlineSearch, HiOutlineExternalLink,
- HiOutlineDocumentDownload, HiOutlineTruck, HiOutlineChevronDown,
- HiOutlineChevronRight, HiOutlineCube, HiOutlineXCircle,
+ HiOutlineDocumentDownload, HiOutlineTruck, HiOutlineChevronRight,
+ HiOutlineCube, HiOutlineXCircle, HiOutlineTrash,
 } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
 import { formatPrice } from '../../lib/pricing'
@@ -19,13 +19,7 @@ const STATUS_LABEL = {
 }
 
 const STATUS_FILTER_OPTIONS = [
- 'all',
- 'pending_payment',
- 'paid',
- 'processing',
- 'shipped',
- 'completed',
- 'cancelled',
+ 'all', 'pending_payment', 'paid', 'processing', 'shipped', 'completed', 'cancelled',
 ]
 
 const STATUS_COLOR = {
@@ -40,15 +34,9 @@ const STATUS_COLOR = {
 }
 
 const SHIPMENT_STATUS_LABEL = {
- created: 'Shipment Dibuat',
- confirmed: 'Dikonfirmasi',
- scheduled: 'Dijadwalkan',
- allocated: 'Kurir Ditugaskan',
- picking_up: 'Kurir Menuju',
- picked: 'Paket Diambil',
- in_transit: 'Dalam Perjalanan',
- dropping_off: 'Sedang Diantar',
- delivered: 'Terkirim',
+ created: 'Shipment Dibuat', confirmed: 'Dikonfirmasi', scheduled: 'Dijadwalkan',
+ allocated: 'Kurir Ditugaskan', picking_up: 'Kurir Menuju', picked: 'Paket Diambil',
+ in_transit: 'Dalam Perjalanan', dropping_off: 'Sedang Diantar', delivered: 'Terkirim',
  cancelled: 'Dibatalkan',
 }
 
@@ -64,40 +52,33 @@ function getDateRange(preset) {
  const now = new Date()
  if (preset === 'all') return null
  if (preset === 'today') {
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  return { from: start.toISOString(), to: now.toISOString() }
+  return { from: new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString(), to: now.toISOString() }
  }
  if (preset === '7d') {
-  const from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-  return { from: from.toISOString(), to: now.toISOString() }
+  return { from: new Date(now.getTime() - 7 * 86400000).toISOString(), to: now.toISOString() }
  }
  if (preset === '30d') {
-  const from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-  return { from: from.toISOString(), to: now.toISOString() }
+  return { from: new Date(now.getTime() - 30 * 86400000).toISOString(), to: now.toISOString() }
  }
  if (preset === 'month') {
-  const start = new Date(now.getFullYear(), now.getMonth(), 1)
-  return { from: start.toISOString(), to: now.toISOString() }
+  return { from: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), to: now.toISOString() }
  }
  return null
 }
 
 function StatusBadge({ status }) {
- const color = STATUS_COLOR[status] || 'bg-gray-100 text-gray-600 border border-gray-200'
- const label = STATUS_LABEL[status] || status || '-'
  return (
-  <span className={`inline-flex items-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap ${color}`}>
-   {label}
+  <span className={`inline-flex items-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap ${STATUS_COLOR[status] || 'bg-gray-100 text-gray-600 border border-gray-200'}`}>
+   {STATUS_LABEL[status] || status || '-'}
   </span>
  )
 }
 
 function ShipmentBadge({ status }) {
  if (!status || status === 'not_created') return null
- const label = SHIPMENT_STATUS_LABEL[status] || status
  return (
   <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100 whitespace-nowrap">
-   📦 {label}
+   📦 {SHIPMENT_STATUS_LABEL[status] || status}
   </span>
  )
 }
@@ -126,7 +107,6 @@ function OrderDetail({ order, items }) {
  return (
   <div className="bg-gray-50/80 border-t border-gray-100 px-6 py-5">
    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-    {/* Items */}
     <div className="md:col-span-2">
      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Item yang dibeli</p>
      {items && items.length > 0 ? (
@@ -146,28 +126,22 @@ function OrderDetail({ order, items }) {
      )}
      <div className="mt-3 bg-white rounded-lg border border-gray-100 px-3 py-2.5 space-y-1.5">
       <div className="flex justify-between text-xs text-gray-500">
-       <span>Subtotal</span>
-       <span>{formatPrice(order.subtotal_amount)}</span>
+       <span>Subtotal</span><span>{formatPrice(order.subtotal_amount)}</span>
       </div>
       <div className="flex justify-between text-xs text-gray-500">
        <span>Ongkir ({order.selected_courier?.courierCompany} {order.selected_courier?.courierService})</span>
        <span>{formatPrice(order.shipping_amount)}</span>
       </div>
       <div className="flex justify-between text-sm font-bold text-gray-900 pt-1.5 border-t border-gray-100">
-       <span>Total</span>
-       <span>{formatPrice(order.total_amount)}</span>
+       <span>Total</span><span>{formatPrice(order.total_amount)}</span>
       </div>
      </div>
     </div>
-
-    {/* Info */}
     <div className="space-y-4">
      <div>
       <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Alamat Pengiriman</p>
       <p className="text-sm text-gray-700 leading-relaxed">{order.destination_address}</p>
-      {order.destination_note && (
-       <p className="text-xs text-gray-400 mt-1 italic">Catatan: {order.destination_note}</p>
-      )}
+      {order.destination_note && <p className="text-xs text-gray-400 mt-1 italic">Catatan: {order.destination_note}</p>}
      </div>
      {order.order_note && (
       <div>
@@ -184,9 +158,7 @@ function OrderDetail({ order, items }) {
      <div>
       <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Status Pengiriman</p>
       <ShipmentBadge status={order.shipment_status} />
-      {!order.shipment_status || order.shipment_status === 'not_created' ? (
-       <p className="text-sm text-gray-400">-</p>
-      ) : null}
+      {(!order.shipment_status || order.shipment_status === 'not_created') && <p className="text-sm text-gray-400">-</p>}
      </div>
      {order.paid_at && (
       <div>
@@ -206,6 +178,9 @@ export default function OrdersPage() {
  const [loading, setLoading] = useState(true)
  const [statusFilter, setStatusFilter] = useState('all')
  const [datePreset, setDatePreset] = useState('all')
+ const [customDateFrom, setCustomDateFrom] = useState('')
+ const [customDateTo, setCustomDateTo] = useState('')
+ const [useCustomDate, setUseCustomDate] = useState(false)
  const [search, setSearch] = useState('')
  const [error, setError] = useState('')
  const [expandedOrder, setExpandedOrder] = useState(null)
@@ -223,13 +198,18 @@ export default function OrdersPage() {
    query = query.eq('status', statusFilter)
   }
 
-  const dateRange = getDateRange(datePreset)
-  if (dateRange) {
-   query = query.gte('created_at', dateRange.from).lte('created_at', dateRange.to)
+  if (useCustomDate && customDateFrom) {
+   const from = new Date(customDateFrom).toISOString()
+   const to = customDateTo ? new Date(customDateTo + 'T23:59:59').toISOString() : new Date().toISOString()
+   query = query.gte('created_at', from).lte('created_at', to)
+  } else {
+   const dateRange = getDateRange(datePreset)
+   if (dateRange) {
+    query = query.gte('created_at', dateRange.from).lte('created_at', dateRange.to)
+   }
   }
 
   const { data, error: fetchErr } = await query
-
   if (fetchErr) {
    setError(fetchErr.message)
    setOrders([])
@@ -241,14 +221,11 @@ export default function OrdersPage() {
 
  const fetchOrderItems = async (orderId) => {
   if (orderItems[orderId]) return
-  const { data } = await supabase
-   .from('checkout_order_items')
-   .select('*')
-   .eq('order_id', orderId)
+  const { data } = await supabase.from('checkout_order_items').select('*').eq('order_id', orderId)
   if (data) setOrderItems(prev => ({ ...prev, [orderId]: data }))
  }
 
- useEffect(() => { fetchOrders() }, [statusFilter, datePreset])
+ useEffect(() => { fetchOrders() }, [statusFilter, datePreset, useCustomDate, customDateFrom, customDateTo])
 
  const filtered = orders.filter(o => {
   if (!search) return true
@@ -262,12 +239,8 @@ export default function OrdersPage() {
  })
 
  const toggleExpand = async (orderId) => {
-  if (expandedOrder === orderId) {
-   setExpandedOrder(null)
-  } else {
-   setExpandedOrder(orderId)
-   await fetchOrderItems(orderId)
-  }
+  if (expandedOrder === orderId) { setExpandedOrder(null) }
+  else { setExpandedOrder(orderId); await fetchOrderItems(orderId) }
  }
 
  const handleCreateShipment = async (orderId) => {
@@ -279,11 +252,8 @@ export default function OrdersPage() {
    if (!data.success) throw new Error(data.error)
    alert('Shipment berhasil dibuat! Waybill: ' + (data.shipment?.waybillId || '-'))
    fetchOrders()
-  } catch (err) {
-   alert(err.message || 'Gagal membuat shipment.')
-  } finally {
-   setActionLoading(null)
-  }
+  } catch (err) { alert(err.message || 'Gagal membuat shipment.') }
+  finally { setActionLoading(null) }
  }
 
  const handlePrintLabel = async (orderId) => {
@@ -292,19 +262,11 @@ export default function OrdersPage() {
    const { data, error: fnErr } = await supabase.functions.invoke('print-label', { body: { orderId } })
    if (fnErr) throw fnErr
    if (!data.success) throw new Error(data.error)
-
-   if (data.label?.url) {
-    window.open(data.label.url, '_blank')
-   } else if (data.label?.test_mode) {
-    alert(data.label.message || 'Mode test — label tidak tersedia.')
-   } else {
-    alert('Label tidak tersedia. Cek dashboard Biteship.')
-   }
-  } catch (err) {
-   alert(err.message || 'Gagal mengambil label.')
-  } finally {
-   setActionLoading(null)
-  }
+   if (data.label?.url) window.open(data.label.url, '_blank')
+   else if (data.label?.test_mode) alert(data.label.message || 'Mode test — label tidak tersedia.')
+   else alert('Label tidak tersedia. Cek dashboard Biteship.')
+  } catch (err) { alert(err.message || 'Gagal mengambil label.') }
+  finally { setActionLoading(null) }
  }
 
  const handleSchedulePickup = async (orderId) => {
@@ -313,34 +275,33 @@ export default function OrdersPage() {
    const { data, error: fnErr } = await supabase.functions.invoke('schedule-pickup', { body: { orderId } })
    if (fnErr) throw fnErr
    if (!data.success) throw new Error(data.error)
-
-   if (data.pickup?.test_mode) {
-    alert(data.pickup.message || 'Mode test — pickup tidak dijadwalkan.')
-   } else {
-    alert('Pickup berhasil dijadwalkan!')
-   }
-  } catch (err) {
-   alert(err.message || 'Gagal menjadwalkan pickup.')
-  } finally {
-   setActionLoading(null)
-  }
+   alert(data.pickup?.test_mode ? (data.pickup.message || 'Mode test.') : 'Pickup berhasil dijadwalkan!')
+  } catch (err) { alert(err.message || 'Gagal menjadwalkan pickup.') }
+  finally { setActionLoading(null) }
  }
 
  const handleCancelOrder = async (orderId) => {
   if (!window.confirm('Batalkan order ini?')) return
   setActionLoading(`cancel-${orderId}`)
   try {
-   const { error: updateErr } = await supabase
-    .from('checkout_orders')
-    .update({ status: 'cancelled' })
-    .eq('id', orderId)
+   const { error: updateErr } = await supabase.from('checkout_orders').update({ status: 'cancelled' }).eq('id', orderId)
    if (updateErr) throw updateErr
    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o))
-  } catch (err) {
-   setError(err.message || 'Gagal membatalkan order.')
-  } finally {
-   setActionLoading(null)
-  }
+  } catch (err) { setError(err.message || 'Gagal membatalkan order.') }
+  finally { setActionLoading(null) }
+ }
+
+ const handleDeleteOrder = async (orderId) => {
+  if (!window.confirm('HAPUS order ini secara permanen? Data tidak bisa dikembalikan.')) return
+  setActionLoading(`delete-${orderId}`)
+  try {
+   const { error: delItemsErr } = await supabase.from('checkout_order_items').delete().eq('order_id', orderId)
+   if (delItemsErr) throw delItemsErr
+   const { error: delOrderErr } = await supabase.from('checkout_orders').delete().eq('id', orderId)
+   if (delOrderErr) throw delOrderErr
+   setOrders(prev => prev.filter(o => o.id !== orderId))
+  } catch (err) { setError(err.message || 'Gagal menghapus order.') }
+  finally { setActionLoading(null) }
  }
 
  const formatDate = (iso) => new Date(iso).toLocaleDateString('id-ID', {
@@ -351,10 +312,12 @@ export default function OrdersPage() {
   .filter(o => ['paid', 'processing', 'shipped', 'completed'].includes(o.status))
   .reduce((sum, o) => sum + (o.total_amount || 0), 0)
 
- const isCancellable = (status) => ['pending_payment', 'paid', 'processing'].includes(status)
- const canCreateShipment = (order) => !order.biteship_order_id && ['paid', 'pending_payment'].includes(order.status)
- const canPrintLabel = (order) => order.biteship_order_id && ['processing', 'shipped'].includes(order.status)
- const canPickup = (order) => order.biteship_order_id && order.status === 'processing' && !['picking_up', 'picked', 'in_transit', 'dropping_off', 'delivered'].includes(order.shipment_status)
+ const handlePresetClick = (value) => {
+  setDatePreset(value)
+  setUseCustomDate(false)
+  setCustomDateFrom('')
+  setCustomDateTo('')
+ }
 
  return (
   <div className="space-y-4">
@@ -363,53 +326,49 @@ export default function OrdersPage() {
     <div className="relative flex-1 max-w-sm">
      <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
      <input
-      type="text"
-      placeholder="Cari order, nama, email..."
-      value={search}
-      onChange={e => setSearch(e.target.value)}
+      type="text" placeholder="Cari order, nama, email..." value={search} onChange={e => setSearch(e.target.value)}
       className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 transition-all"
      />
     </div>
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1.5 flex-wrap">
      {STATUS_FILTER_OPTIONS.map(s => (
-      <button
-       key={s}
-       onClick={() => setStatusFilter(s)}
-       className={`px-2.5 py-1.5 text-[11px] font-semibold rounded-md transition-all ${
-        statusFilter === s ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'
-       }`}
+      <button key={s} onClick={() => setStatusFilter(s)}
+       className={`px-2.5 py-1.5 text-[11px] font-semibold rounded-md transition-all ${statusFilter === s ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'}`}
       >
        {s === 'all' ? 'Semua' : STATUS_LABEL[s]}
       </button>
      ))}
     </div>
-    <button
-     onClick={fetchOrders}
-     className="p-2 text-gray-400 hover:text-gray-700 hover:bg-white rounded-lg transition-colors border border-gray-200"
-     title="Refresh"
-    >
+    <button onClick={fetchOrders} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-white rounded-lg transition-colors border border-gray-200 self-start" title="Refresh">
      <HiOutlineRefresh className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
     </button>
    </div>
 
    {/* Date filter */}
-   <div className="flex items-center gap-2">
+   <div className="flex items-center gap-3 flex-wrap">
     <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Periode</span>
     <div className="flex gap-1">
      {DATE_PRESETS.map(p => (
-      <button
-       key={p.value}
-       onClick={() => setDatePreset(p.value)}
-       className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-all ${
-        datePreset === p.value
-         ? 'bg-gray-900 text-white'
-         : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'
-       }`}
+      <button key={p.value} onClick={() => handlePresetClick(p.value)}
+       className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-all ${datePreset === p.value && !useCustomDate ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'}`}
       >
        {p.label}
       </button>
      ))}
     </div>
+    <div className="flex items-center gap-1.5 ml-2">
+     <input type="date" value={customDateFrom} onChange={e => { setCustomDateFrom(e.target.value); setUseCustomDate(true); setDatePreset('all') }}
+      className="text-[11px] border border-gray-200 rounded-md px-2 py-1 text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300" />
+     <span className="text-gray-300 text-xs">—</span>
+     <input type="date" value={customDateTo} onChange={e => { setCustomDateTo(e.target.value); setUseCustomDate(true); setDatePreset('all') }}
+      className="text-[11px] border border-gray-200 rounded-md px-2 py-1 text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300" />
+    </div>
+    {useCustomDate && (
+     <button onClick={() => { setUseCustomDate(false); setCustomDateFrom(''); setCustomDateTo(''); setDatePreset('all') }}
+      className="text-[11px] text-gray-400 hover:text-gray-600 underline">
+      Reset
+     </button>
+    )}
    </div>
 
    {/* Stats */}
@@ -432,12 +391,7 @@ export default function OrdersPage() {
     </div>
    </div>
 
-   {/* Error */}
-   {error && (
-    <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3">
-     <p className="text-sm text-red-600">{error}</p>
-    </div>
-   )}
+   {error && <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3"><p className="text-sm text-red-600">{error}</p></div>}
 
    {/* Table */}
    {loading ? (
@@ -467,18 +421,13 @@ export default function OrdersPage() {
        <tbody className="divide-y divide-gray-50">
         {filtered.map(order => (
          <Fragment key={order.id}>
-          <tr
-           className="hover:bg-gray-50/50 transition-colors cursor-pointer group"
-           onClick={() => toggleExpand(order.id)}
-          >
+          <tr className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => toggleExpand(order.id)}>
            <td className="py-3 px-2 text-center">
             <HiOutlineChevronRight className={`w-4 h-4 text-gray-300 inline transition-transform ${expandedOrder === order.id ? 'rotate-90' : ''}`} />
            </td>
            <td className="py-3 px-4">
             <p className="font-mono text-xs font-semibold text-gray-800">{order.order_number || `#${order.id.slice(0, 8)}`}</p>
-            {order.biteship_waybill_id && (
-             <p className="text-[10px] text-blue-500 mt-0.5 font-mono">Resi: {order.biteship_waybill_id}</p>
-            )}
+            {order.biteship_waybill_id && <p className="text-[10px] text-blue-500 mt-0.5 font-mono">Resi: {order.biteship_waybill_id}</p>}
            </td>
            <td className="py-3 px-4 hidden md:table-cell">
             <p className="text-sm text-gray-700 font-medium">{order.customer_name || '-'}</p>
@@ -495,62 +444,41 @@ export default function OrdersPage() {
            </td>
            <td className="py-3 px-4">
             <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
-             {canCreateShipment(order) && (
-              <ActionButton
-               icon={HiOutlineCube}
-               label="Buat Shipment"
-               onClick={() => handleCreateShipment(order.id)}
-               loading={actionLoading === `shipment-${order.id}`}
-               color="indigo"
-              />
+             {/* Buat Shipment — order paid tanpa shipment */}
+             {!order.biteship_order_id && ['paid', 'pending_payment'].includes(order.status) && (
+              <ActionButton icon={HiOutlineCube} label="Buat Shipment — klik untuk membuat pengiriman ke kurir"
+               onClick={() => handleCreateShipment(order.id)} loading={actionLoading === `shipment-${order.id}`} color="indigo" />
              )}
-             {canPrintLabel(order) && (
-              <ActionButton
-               icon={HiOutlineDocumentDownload}
-               label="Cetak Label"
-               onClick={() => handlePrintLabel(order.id)}
-               loading={actionLoading === `label-${order.id}`}
-               color="blue"
-              />
+             {/* Cetak Label */}
+             {order.biteship_order_id && ['processing', 'shipped'].includes(order.status) && (
+              <ActionButton icon={HiOutlineDocumentDownload} label="Cetak Label Pengiriman"
+               onClick={() => handlePrintLabel(order.id)} loading={actionLoading === `label-${order.id}`} color="blue" />
              )}
-             {canPickup(order) && (
-              <ActionButton
-               icon={HiOutlineTruck}
-               label="Atur Pickup"
-               onClick={() => handleSchedulePickup(order.id)}
-               loading={actionLoading === `pickup-${order.id}`}
-               color="orange"
-              />
+             {/* Atur Pickup */}
+             {order.biteship_order_id && order.status === 'processing' && !['picking_up', 'picked', 'in_transit', 'dropping_off', 'delivered'].includes(order.shipment_status) && (
+              <ActionButton icon={HiOutlineTruck} label="Jadwalkan Kurir Jemput Paket"
+               onClick={() => handleSchedulePickup(order.id)} loading={actionLoading === `pickup-${order.id}`} color="orange" />
              )}
+             {/* WhatsApp */}
              {order.customer_phone && (
-              <a
-               href={`https://wa.me/${order.customer_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Halo ${order.customer_name || ''}, update pesanan ${order.order_number || ''} Puthic Sari:`)}`}
-               target="_blank"
-               rel="noopener noreferrer"
-               className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
-               title="WhatsApp"
-              >
+              <a href={`https://wa.me/${order.customer_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Halo ${order.customer_name || ''}, update pesanan ${order.order_number || ''} Puthic Sari:`)}`}
+               target="_blank" rel="noopener noreferrer" className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg transition-colors" title="Hubungi WhatsApp">
                <HiOutlineExternalLink className="text-base" />
               </a>
              )}
-             {isCancellable(order.status) && (
-              <ActionButton
-               icon={HiOutlineXCircle}
-               label="Batalkan"
-               onClick={() => handleCancelOrder(order.id)}
-               loading={actionLoading === `cancel-${order.id}`}
-               color="red"
-              />
+             {/* Batalkan — hanya untuk order aktif */}
+             {['pending_payment', 'paid', 'processing'].includes(order.status) && (
+              <ActionButton icon={HiOutlineXCircle} label="Batalkan Order"
+               onClick={() => handleCancelOrder(order.id)} loading={actionLoading === `cancel-${order.id}`} color="red" />
              )}
+             {/* Hapus permanen — semua order */}
+             <ActionButton icon={HiOutlineTrash} label="Hapus Permanen"
+              onClick={() => handleDeleteOrder(order.id)} loading={actionLoading === `delete-${order.id}`} color="red" />
             </div>
            </td>
           </tr>
           {expandedOrder === order.id && (
-           <tr>
-            <td colSpan={7} className="p-0">
-             <OrderDetail order={order} items={orderItems[order.id]} />
-            </td>
-           </tr>
+           <tr><td colSpan={7} className="p-0"><OrderDetail order={order} items={orderItems[order.id]} /></td></tr>
           )}
          </Fragment>
         ))}
