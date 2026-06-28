@@ -337,15 +337,11 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
      {/* Upload Foto */}
      <div>
       <label className="block text-sm font-medium text-gray-700 mb-1.5">Foto Produk</label>
-      <div
+      <label
        onDrop={handleDrop}
        onDragOver={handleDragOver}
        onDragLeave={handleDragLeave}
-       className={`
-        border-2 border-dashed rounded-lg p-6 text-center transition-all cursor-pointer
-        ${dragOver ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}
-       `}
-       onClick={() => fileInputRef.current?.click()}
+       className="block border-2 border-dashed rounded-lg p-6 text-center transition-all cursor-pointer border-gray-200 hover:border-gray-300"
       >
        <input
         ref={fileInputRef}
@@ -353,7 +349,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
         multiple
         accept="image/*"
         onChange={handleFileSelect}
-        className="hidden"
+        className="sr-only"
        />
        {uploading ? (
         <div className="flex flex-col items-center gap-2">
@@ -367,7 +363,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
          <p className="text-xs text-gray-400">PNG, JPG, JPEG (maks. 5MB per file)</p>
         </div>
        )}
-      </div>
+      </label>
 
       {/* Image previews */}
       {form.images.length > 0 && (
