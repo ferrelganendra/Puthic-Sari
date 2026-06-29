@@ -40,11 +40,24 @@ const reverseGeocode = async (lat, lon) => {
   const url = new URL('https://nominatim.openstreetmap.org/reverse')
   url.searchParams.set('format', 'jsonv2')
   url.searchParams.set('addressdetails', '1')
+  url.searchParams.set('zoom', '18')
   url.searchParams.set('lat', String(lat))
   url.searchParams.set('lon', String(lon))
 
   const response = await fetch(url.toString(), { headers: NOMINATIM_HEADERS })
   if (!response.ok) throw new Error('Gagal reverse geocode.')
+  return response.json()
+}
+
+const searchNearbyStreets = async (lat, lon) => {
+  const url = new URL('https://nominatim.openstreetmap.org/search')
+  url.searchParams.set('format', 'jsonv2')
+  url.searchParams.set('addressdetails', '1')
+  url.searchParams.set('limit', '5')
+  url.searchParams.set('q', `${lat}, ${lon}`)
+
+  const response = await fetch(url.toString(), { headers: NOMINATIM_HEADERS })
+  if (!response.ok) return []
   return response.json()
 }
 
@@ -160,14 +173,33 @@ export default function AddressSearch({ onSelect, onClear }) {
             return
           }
 
+          // Check if result has street-level detail
+          const addr = place.address || {}
+          const hasStreet = addr.road || addr.pedestrian || addr.footway || addr.house_number
+          let finalPlace = place
+
+          if (!hasStreet) {
+            // No street detail — try forward search with coordinates
+            const nearby = await searchNearbyStreets(latitude, longitude)
+            // Pick the result closest to our coordinates that has a street name
+            const withStreet = nearby.find(p => p.address?.road || p.address?.pedestrian)
+            if (withStreet) finalPlace = withStreet
+          }
+
+          // Build a readable address with street if available
+          const street = finalPlace.address?.road || finalPlace.address?.pedestrian || finalPlace.address?.footway || ''
+          const number = finalPlace.address?.house_number || ''
+          const fullAddress = finalPlace.display_name
+
           await selectAddress({
-            address: place.display_name,
-            city: getCity(place),
-            postalCode: getPostalCode(place),
+            address: street ? `${street} ${number}`.trim() + ', ' + fullAddress.split(',').slice(1).join(',').trim() : fullAddress,
+            city: getCity(finalPlace),
+            postalCode: getPostalCode(finalPlace),
             latitude,
             longitude,
           })
-        } catch {
+        } catch (err) {
+          console.error('Geolocation error:', err)
           setGeoError('Gagal memproses lokasi. Coba lagi.')
         } finally {
           setGeoLoading(false)
