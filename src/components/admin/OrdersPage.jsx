@@ -262,9 +262,15 @@ export default function OrdersPage() {
    const { data, error: fnErr } = await supabase.functions.invoke('print-label', { body: { orderId } })
    if (fnErr) throw fnErr
    if (!data.success) throw new Error(data.error)
-   if (data.label?.url) window.open(data.label.url, '_blank')
-   else if (data.label?.test_mode) alert(data.label.message || 'Mode test — label tidak tersedia.')
-   else alert('Label tidak tersedia. Cek dashboard Biteship.')
+    if (data.label?.html) {
+     const printWindow = window.open('', '_blank')
+     if (!printWindow) throw new Error('Popup print label diblokir browser. Izinkan popup untuk www.puthicsari.com, lalu coba lagi.')
+     printWindow.document.open()
+     printWindow.document.write(data.label.html)
+     printWindow.document.close()
+    } else if (data.label?.url) window.open(data.label.url, '_blank')
+    else if (data.label?.test_mode) alert(data.label.message || 'Mode test — label tidak tersedia.')
+    else alert('Label tidak tersedia. Cek dashboard Biteship.')
    } catch (err) { alert(explainError(err, 'Label belum bisa diambil. Pastikan shipment sudah dibuat, lalu coba lagi.')) }
 
   finally { setActionLoading(null) }
