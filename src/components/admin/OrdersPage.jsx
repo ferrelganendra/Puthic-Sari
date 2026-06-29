@@ -247,9 +247,11 @@ export default function OrdersPage() {
   setActionLoading(`shipment-${orderId}`)
   try {
    const { data, error: fnErr } = await supabase.functions.invoke('manual-shipment', { body: { orderId } })
-   if (fnErr) throw new Error(data?.error || fnErr.message || 'Gagal membuat shipment.')
-   if (!data.success) throw new Error(data.error)
-   alert('Shipment berhasil dibuat! Waybill: ' + (data.shipment?.waybillId || '-'))
+    if (fnErr) throw new Error(data?.error || fnErr.message || 'Gagal membuat shipment.')
+    if (!data.success) throw new Error(data.error)
+    let msg = 'Shipment berhasil dibuat! Waybill: ' + (data.shipment?.waybillId || '-')
+    if (data.shipment?.priceNote) msg += '\n\n' + data.shipment.priceNote
+    alert(msg)
    fetchOrders()
    } catch (err) { alert(explainError(err, 'Shipment belum bisa dibuat. Cek status order, alamat, kurir, dan saldo Biteship.')) }
 

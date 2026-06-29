@@ -1,5 +1,5 @@
 import { biteshipItemsFromOrderRows } from '../_shared/checkout.ts'
-import { createShipment } from '../_shared/biteship.ts'
+import { createShipment, resolveSelectedRate, type BiteshipDestination } from '../_shared/biteship.ts'
 import { createSupabaseAdmin, getUser } from '../_shared/supabase.ts'
 import { handleOptions, jsonResponse, readJson, safeApiError } from '../_shared/http.ts'
 
@@ -39,6 +39,27 @@ Deno.serve(async (req) => {
     if (itemsError) throw itemsError
     if (!items?.length) throw new Error('Item order kosong.')
 
+    // Re-verify rate at shipment time: if Biteship price changed since checkout, update order
+    const metadata = (order.metadata || {}) as Record<string, unknown>
+    const destination: BiteshipDestination = {
+      postalCode: Number(order.destination_postal_code || 0),
+      areaId: String(metadata.destination_area_id || '').trim(),
+      latitude: Number(metadata.destination_latitude || 0),
+      longitude: Number(metadata.destination_longitude || 0),
+    }
+    const currentRate = await resolveSelectedRate(destination, biteshipItemsFromOrderRows(items), order.selected_courier as Record<string, unknown>)
+    const quotedPrice = Number(order.shipping_amount || 0)
+    const actualPrice = Number(currentRate.price || 0)
+    let priceNote = ''
+
+    if (actualPrice !== quotedPrice) {
+      priceNote = `Harga ongkir berubah dari Rp${quotedPrice.toLocaleString('id-ID')} (saat checkout) menjadi Rp${actualPrice.toLocaleString('id-ID')} (saat shipment dibuat).`
+      await supabase
+        .from('checkout_orders')
+        .update({ shipping_amount: actualPrice, total_amount: Number(order.subtotal_amount || 0) + actualPrice })
+        .eq('id', order.id)
+    }
+
     await supabase
       .from('checkout_orders')
       .update({ status: 'paid', shipment_status: 'creating' })
@@ -71,6 +92,7 @@ Deno.serve(async (req) => {
         id: shipment.id,
         waybillId,
         status: shipment.status,
+        priceNote,
       },
     }, 200, req)
   } catch (error) {
