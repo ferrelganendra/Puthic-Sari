@@ -34,14 +34,12 @@ const fetchOsmAddresses = async (input) => {
 
 const NOMINATIM_HEADERS = {
   'Accept': 'application/json',
-  'User-Agent': 'PuthicSari/1.0 (puthicsari.com)',
 }
 
 const reverseGeocode = async (lat, lon) => {
   const url = new URL('https://nominatim.openstreetmap.org/reverse')
   url.searchParams.set('format', 'jsonv2')
   url.searchParams.set('addressdetails', '1')
-  url.searchParams.set('countrycodes', 'id')
   url.searchParams.set('lat', String(lat))
   url.searchParams.set('lon', String(lon))
 
