@@ -3,6 +3,7 @@ import { HiOutlineRefresh, HiOutlineSearch, HiOutlineChevronRight } from 'react-
 import { FaWhatsapp, FaBox, FaFileDownload, FaTruck, FaBan, FaTrashAlt } from 'react-icons/fa'
 import { supabase } from '../../lib/supabase'
 import { formatPrice } from '../../lib/pricing'
+import { explainError } from '../../lib/errorMessages'
 
 const STATUS_LABEL = {
  pending_payment: 'Menunggu Bayar',
@@ -208,7 +209,8 @@ export default function OrdersPage() {
 
   const { data, error: fetchErr } = await query
   if (fetchErr) {
-   setError(fetchErr.message)
+    setError(explainError(fetchErr, 'Data pesanan belum bisa dimuat. Cek koneksi Supabase dan izin akun admin.'))
+
    setOrders([])
   } else {
    setOrders(data || [])
@@ -249,7 +251,8 @@ export default function OrdersPage() {
    if (!data.success) throw new Error(data.error)
    alert('Shipment berhasil dibuat! Waybill: ' + (data.shipment?.waybillId || '-'))
    fetchOrders()
-  } catch (err) { alert(err.message || 'Gagal membuat shipment.') }
+   } catch (err) { alert(explainError(err, 'Shipment belum bisa dibuat. Cek status order, alamat, kurir, dan saldo Biteship.')) }
+
   finally { setActionLoading(null) }
  }
 
@@ -262,7 +265,8 @@ export default function OrdersPage() {
    if (data.label?.url) window.open(data.label.url, '_blank')
    else if (data.label?.test_mode) alert(data.label.message || 'Mode test — label tidak tersedia.')
    else alert('Label tidak tersedia. Cek dashboard Biteship.')
-  } catch (err) { alert(err.message || 'Gagal mengambil label.') }
+   } catch (err) { alert(explainError(err, 'Label belum bisa diambil. Pastikan shipment sudah dibuat, lalu coba lagi.')) }
+
   finally { setActionLoading(null) }
  }
 
@@ -273,7 +277,8 @@ export default function OrdersPage() {
    if (fnErr) throw fnErr
    if (!data.success) throw new Error(data.error)
    alert(data.pickup?.test_mode ? (data.pickup.message || 'Mode test.') : 'Pickup berhasil dijadwalkan!')
-  } catch (err) { alert(err.message || 'Gagal menjadwalkan pickup.') }
+   } catch (err) { alert(explainError(err, 'Pickup belum bisa dijadwalkan. Cek shipment dan jadwal pickup di Biteship.')) }
+
   finally { setActionLoading(null) }
  }
 
@@ -284,7 +289,8 @@ export default function OrdersPage() {
    const { error: updateErr } = await supabase.from('checkout_orders').update({ status: 'cancelled' }).eq('id', orderId)
    if (updateErr) throw updateErr
    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o))
-  } catch (err) { setError(err.message || 'Gagal membatalkan order.') }
+   } catch (err) { setError(explainError(err, 'Order belum bisa dibatalkan. Cek koneksi Supabase dan izin akun admin.')) }
+
   finally { setActionLoading(null) }
  }
 
@@ -297,7 +303,8 @@ export default function OrdersPage() {
    const { error: delOrderErr } = await supabase.from('checkout_orders').delete().eq('id', orderId)
    if (delOrderErr) throw delOrderErr
    setOrders(prev => prev.filter(o => o.id !== orderId))
-  } catch (err) { setError(err.message || 'Gagal menghapus order.') }
+   } catch (err) { setError(explainError(err, 'Order belum bisa dihapus. Cek item pesanan terkait dan izin akun admin.')) }
+
   finally { setActionLoading(null) }
  }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { HiOutlinePlus, HiOutlineTrash, HiOutlineUpload, HiOutlinePhotograph } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
+import { explainError } from '../../lib/errorMessages'
 import ConfirmDialog from './ConfirmDialog'
 
 export default function BannersPage() {
@@ -44,11 +45,11 @@ export default function BannersPage() {
    .from('product-images')
    .upload(filePath, file, { cacheControl: '3600', upsert: false })
 
-  if (uploadErr) {
-   setUploadError('Gagal upload: ' + uploadErr.message)
-   setUploading(false)
-   return
-  }
+   if (uploadErr) {
+    setUploadError(explainError(uploadErr, 'Banner belum bisa diupload. Pastikan file gambar valid dan storage Supabase aktif.'))
+    setUploading(false)
+    return
+   }
 
   const { data: urlData } = supabase.storage
    .from('product-images')

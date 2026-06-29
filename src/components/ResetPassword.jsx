@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { HiCheck, HiOutlineEye, HiOutlineEyeOff, HiCheckCircle, HiExclamationCircle } from 'react-icons/hi'
 import { supabase } from '../lib/supabase'
 import { siteAssetUrl } from '../lib/assetUrl'
+import { explainError } from '../lib/errorMessages'
 
 /**
  * ResetPassword — Full page shown when user clicks the link from password reset email.
@@ -69,7 +70,7 @@ export default function ResetPassword({ onClose }) {
       setSuccess(true)
       await supabase.auth.signOut()
     } catch (err) {
-      setError(err.message || 'Gagal mengubah password. Coba lagi.')
+      setError(explainError(err, 'Password belum bisa diubah. Minta link reset baru atau coba login ulang.'))
     } finally {
       setLoading(false)
     }

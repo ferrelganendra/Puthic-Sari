@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { HiOutlineUser, HiOutlineLogout, HiOutlineShoppingBag, HiOutlineClock, HiOutlineTruck, HiOutlineKey, HiOutlineEye, HiOutlineEyeOff, HiCheckCircle, HiChevronLeft } from 'react-icons/hi'
 import { supabase } from '../lib/supabase'
 import { formatPrice } from '../lib/pricing'
+import { explainError } from '../lib/errorMessages'
 
 function OrderStatusBadge({ status }) {
   const map = {
@@ -50,14 +51,14 @@ function PasswordForm({ onComplete }) {
       if (signInError) { setError('Password lama salah.'); setLoading(false); return }
 
       const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
-      if (updateError) { setError(updateError.message); setLoading(false); return }
+      if (updateError) { setError(explainError(updateError, 'Password baru belum bisa disimpan. Coba login ulang, lalu ulangi.')); setLoading(false); return }
 
       setSuccess(true)
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (err) {
-      setError(err.message || 'Gagal mengubah password.')
+      setError(explainError(err, 'Password belum bisa diubah. Cek koneksi atau coba login ulang.'))
     } finally {
       setLoading(false)
     }

@@ -3,6 +3,7 @@ import { FaInstagram, FaTiktok, FaFacebookF, FaYoutube } from 'react-icons/fa'
 import { SiShopee } from 'react-icons/si'
 import { HiChevronDown, HiArrowRight, HiCheck, HiRefresh } from 'react-icons/hi'
 import { supabase } from '../lib/supabase'
+import { explainError } from '../lib/errorMessages'
 
 /**
  * Footer — ZM-style ecommerce footer.
@@ -45,14 +46,14 @@ export default function Footer() {
           setLoading(false)
           return
         }
-        throw new Error('Gagal mendaftar. Coba lagi nanti.')
+        throw insertError
       }
 
       setSubscribed(true)
       setEmail('')
       setTimeout(() => setSubscribed(false), 5000)
     } catch (err) {
-      setError(err.message || 'Gagal mendaftar. Coba lagi nanti.')
+      setError(explainError(err, 'Email belum bisa didaftarkan. Cek koneksi atau coba lagi nanti.'))
     } finally {
       setLoading(false)
     }

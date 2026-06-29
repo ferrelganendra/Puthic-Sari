@@ -103,6 +103,7 @@ export default function AddressSearch({ onSelect, onClear }) {
       } catch {
         setPlaces([])
         setFailed(true)
+        setGeoError('Pencarian alamat sedang bermasalah. Ketik alamat lengkap, lalu pilih “Pakai alamat ini”.')
       } finally {
         setLoading(false)
       }

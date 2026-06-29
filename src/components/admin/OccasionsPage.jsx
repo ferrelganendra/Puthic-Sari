@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineX, HiOutlineSearch, HiOutlinePhotograph } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
+import { explainError } from '../../lib/errorMessages'
 import ConfirmDialog from './ConfirmDialog'
 
 export default function OccasionsPage() {
@@ -97,11 +98,11 @@ export default function OccasionsPage() {
    occasionId = result.data?.id
   }
 
-  if (result.error) {
-   setError(result.error.message)
-   setSaving(false)
-   return
-  }
+   if (result.error) {
+    setError(explainError(result.error, 'Occasion belum bisa disimpan. Cek nama, produk pilihan, dan izin akun admin.'))
+    setSaving(false)
+    return
+   }
 
   // Sync product_occasions for this occasion
   if (occasionId) {

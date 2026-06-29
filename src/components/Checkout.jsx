@@ -3,6 +3,7 @@ import { HiCheck, HiCheckCircle, HiExclamationCircle, HiRefresh, HiX } from 'rea
 import { useCart } from '../context/CartContext'
 import { getFinalPrice, formatPrice } from '../lib/pricing'
 import { supabase } from '../lib/supabase'
+import { explainError } from '../lib/errorMessages'
 import AddressSearch from './AddressSearch'
 
 /**
@@ -29,16 +30,15 @@ const STEPS = [
 ]
 
 function apiErrorMessage(data, fallback) {
-  return data?.error || data?.message || fallback
+  return explainError(data?.error || data?.message, fallback)
 }
 
-function safeCheckoutErrorMessage(error, fallback = 'Checkout gagal. Silakan coba lagi atau hubungi admin.') {
+function safeCheckoutErrorMessage(error, fallback = 'Checkout gagal. Cek data pesanan, alamat, kurir, dan pembayaran. Jika masih gagal, hubungi admin.') {
   const message = error?.message || String(error || '')
   if (/keranjang kosong|produk tidak ditemukan|tidak aktif|sold out|nama penerima|nomor whatsapp|alamat pengiriman|kode pos|area biteship|pilih layanan kurir|layanan kurir tidak tersedia/i.test(message)) {
     return message
   }
-  if (/ongkir|kurir/i.test(fallback)) return 'Gagal mengambil ongkir. Silakan hubungi admin untuk bantuan kurir manual.'
-  return fallback
+  return explainError(error, fallback)
 }
 
 async function invokeCheckoutFunction(name, body) {
@@ -348,12 +348,12 @@ export default function Checkout({ onClose }) {
       snap.pay(payment.token, {
         onSuccess: (result) => { handled = true; setCreatedOrder({ ...order, payment, paymentState: 'success', midtransResult: result }); clearCart() },
         onPending: (result) => { handled = true; setCreatedOrder({ ...order, payment, paymentState: 'pending', midtransResult: result }); clearCart() },
-        onError: () => { handled = true; setError('Pembayaran gagal. Silakan coba lagi.') },
+        onError: () => { handled = true; setError('Pembayaran gagal diproses oleh Midtrans. Coba ulangi pembayaran. Jika tetap gagal, hubungi admin dengan nomor order ini.') },
         onClose: () => { if (!handled) setCreatedOrder({ ...order, payment, paymentState: 'closed' }) },
       })
     } catch (err) {
       if (import.meta.env.DEV) console.error('snap.pay failed', err)
-      setError('Pembayaran gagal dibuka. Silakan coba lagi.')
+      setError(explainError(err, 'Halaman pembayaran Midtrans belum bisa dibuka. Cek koneksi internet dan konfigurasi Midtrans.'))
     }
   }
 

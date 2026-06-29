@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineSearch, HiOutlinePhotograph, HiStar } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
+import { explainError } from '../../lib/errorMessages'
 import ProductForm from './ProductForm'
 import ConfirmDialog from './ConfirmDialog'
 
@@ -42,7 +43,8 @@ export default function ProductsPage({ onProductsChanged }) {
    .order('id', { ascending: false })
 
   if (error) {
-   setPageError(error.message)
+    setPageError(explainError(error, 'Data produk belum bisa dimuat. Cek koneksi Supabase dan izin akun admin.'))
+
    setProducts([])
   } else {
    const normalized = (data || []).map(product => ({
@@ -72,37 +74,37 @@ export default function ProductsPage({ onProductsChanged }) {
   refreshProducts()
  }
 
- const toggleBestSeller = async (product) => {
-  if (flagColumnMissing) {
-   setPageError(productFlagsMigrationMessage)
-   return
+  const toggleBestSeller = async (product) => {
+   if (flagColumnMissing) {
+    setPageError(productFlagsMigrationMessage)
+    return
+   }
+
+   const { error } = await supabase.from('products').update({ is_best_seller: !product.is_best_seller }).eq('id', product.id)
+   if (error && isMissingProductFlagColumn(error)) {
+    setFlagColumnMissing(true)
+    setPageError(productFlagsMigrationMessage)
+    return
+   }
+   if (error) setPageError(explainError(error, 'Status Best Seller belum bisa diubah. Cek kolom produk dan izin akun admin.'))
+   refreshProducts()
   }
 
-  const { error } = await supabase.from('products').update({ is_best_seller: !product.is_best_seller }).eq('id', product.id)
-  if (error && isMissingProductFlagColumn(error)) {
-   setFlagColumnMissing(true)
-   setPageError(productFlagsMigrationMessage)
-   return
-  }
-  if (error) setPageError(error.message)
-  refreshProducts()
- }
+  const toggleSoldOut = async (product) => {
+   if (flagColumnMissing) {
+    setPageError(productFlagsMigrationMessage)
+    return
+   }
 
- const toggleSoldOut = async (product) => {
-  if (flagColumnMissing) {
-   setPageError(productFlagsMigrationMessage)
-   return
+   const { error } = await supabase.from('products').update({ is_sold_out: !product.is_sold_out }).eq('id', product.id)
+   if (error && isMissingProductFlagColumn(error)) {
+    setFlagColumnMissing(true)
+    setPageError(productFlagsMigrationMessage)
+    return
+   }
+   if (error) setPageError(explainError(error, 'Status Sold Out belum bisa diubah. Cek kolom produk dan izin akun admin.'))
+   refreshProducts()
   }
-
-  const { error } = await supabase.from('products').update({ is_sold_out: !product.is_sold_out }).eq('id', product.id)
-  if (error && isMissingProductFlagColumn(error)) {
-   setFlagColumnMissing(true)
-   setPageError(productFlagsMigrationMessage)
-   return
-  }
-  if (error) setPageError(error.message)
-  refreshProducts()
- }
 
  const filtered = products.filter(p =>
   p.name.toLowerCase().includes(search.toLowerCase()) ||

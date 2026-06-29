@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineX } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
+import { explainError } from '../../lib/errorMessages'
 import ConfirmDialog from './ConfirmDialog'
 
 export default function CategoriesPage() {
@@ -59,9 +60,9 @@ export default function CategoriesPage() {
    result = await supabase.from('categories').insert(data)
   }
 
-  if (result.error) {
-   setError(result.error.message)
-  } else {
+   if (result.error) {
+    setError(explainError(result.error, 'Kategori belum bisa disimpan. Cek nama kategori dan izin akun admin.'))
+   } else {
    setShowForm(false)
    setEditCategory(null)
    fetchCategories()

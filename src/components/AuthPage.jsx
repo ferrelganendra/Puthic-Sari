@@ -3,6 +3,7 @@ import { HiOutlineEye, HiOutlineEyeOff, HiCheck } from 'react-icons/hi'
 import { supabase } from '../lib/supabase'
 import { ensureProfile } from '../lib/auth'
 import { siteAssetUrl } from '../lib/assetUrl'
+import { explainError } from '../lib/errorMessages'
 
 /**
  * AuthPage — full-page login / register / forgot-password.
@@ -58,7 +59,7 @@ export default function AuthPage({ onAuth, initialTab = 'login' }) {
     if (password !== confirmPassword) { setError('Password tidak cocok.'); setLoading(false); return }
     if (password.length < 6) { setError('Password minimal 6 karakter.'); setLoading(false); return }
     const { data, error: authError } = await supabase.auth.signUp({ email, password, options: { data: { name } } })
-    if (authError) { setError(authError.message); setLoading(false); return }
+    if (authError) { setError(explainError(authError, 'Akun belum bisa dibuat. Cek email/password, lalu coba lagi.')); setLoading(false); return }
     if (data.user && !data.session) { setSuccess('Akun berhasil dibuat! Cek email untuk verifikasi.'); setLoading(false); return }
     if (data.session) { const profile = await ensureProfileWithTimeout(data.user); onAuth(data.session, profile) }
     setLoading(false)
@@ -67,7 +68,7 @@ export default function AuthPage({ onAuth, initialTab = 'login' }) {
   const handleForgotPassword = async (e) => {
     e.preventDefault(); setLoading(true); setError('')
     const { error: resetErr } = await supabase.auth.resetPasswordForEmail(forgotEmail, { redirectTo: `${window.location.origin}/reset-password` })
-    if (resetErr) setError(resetErr.message); else setForgotSent(true)
+    if (resetErr) setError(explainError(resetErr, 'Link reset belum bisa dikirim. Cek email, lalu coba lagi.')); else setForgotSent(true)
     setLoading(false)
   }
 

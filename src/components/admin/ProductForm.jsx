@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { HiOutlineX, HiOutlinePhotograph, HiOutlineTrash, HiOutlineUpload } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
+import { explainError } from '../../lib/errorMessages'
 
 const productFlagsMigrationMessage = 'Kolom Best Seller / Sold Out belum ada di Supabase. Jalankan scripts/migration-product-flags.sql di SQL Editor, lalu reload halaman admin.'
 const categoryLabel = {
@@ -105,7 +106,8 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
      .getPublicUrl(filePath)
     uploaded.push(urlData.publicUrl)
    } else {
-    setError(`Gagal upload ${file.name}: ${error.message}`)
+     setError(`Upload ${file.name} gagal. ${explainError(error, 'Pastikan file gambar valid dan storage Supabase aktif.')}`)
+
    }
   }
 
@@ -176,7 +178,8 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
 
   if (result.error) {
    if (!isMissingProductFlagColumn(result.error)) {
-    setError(result.error.message)
+     setError(explainError(result.error, 'Produk belum bisa disimpan. Cek nama, harga, kategori, gambar, dan izin akun admin.'))
+
     setSaving(false)
     return
    }
@@ -191,7 +194,8 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
    }
 
    if (result.error) {
-    setError(result.error.message)
+     setError(explainError(result.error, 'Produk belum bisa disimpan. Cek nama, harga, kategori, gambar, dan izin akun admin.'))
+
     setSaving(false)
     return
    }
