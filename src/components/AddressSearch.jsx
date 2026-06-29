@@ -268,11 +268,11 @@ export default function AddressSearch({ onSelect, onClear }) {
           : 'Klik "Gunakan Lokasi Saya" dulu untuk menyimpan koordinat, lalu ketik alamat lengkap.'}
       </p>
 
-      {(loading || places.length > 0 || failed) && (
-        <div className="absolute z-20 mt-2 w-full rounded-xl border border-border bg-white shadow-soft max-h-60 overflow-auto">
+      {(loading || places.length > 0) && (
+        <div className="absolute z-20 mt-2 w-full rounded-xl border border-border bg-white shadow-soft max-h-48 overflow-auto">
           {loading ? (
             <div className="px-3 py-2 text-xs text-text-muted">Mencari alamat...</div>
-          ) : places.length > 0 ? places.map((place) => (
+          ) : places.map((place) => (
             <button
               key={place.place_id}
               type="button"
@@ -282,14 +282,16 @@ export default function AddressSearch({ onSelect, onClear }) {
               <HiOutlineLocationMarker className="mt-0.5 flex-shrink-0 text-accent" />
               <span className="block text-heading">{place.display_name}</span>
             </button>
-          )) : (
-            <div className="space-y-2 px-3 py-3 text-xs text-text-muted">
-              <p>Alamat tidak ditemukan di peta. Gunakan alamat yang diketik, lalu lengkapi kode pos dan detail pengiriman.</p>
-              <button type="button" onClick={selectTypedAddress} className="w-full rounded-lg border border-accent/40 px-3 py-2 text-left text-sm font-medium text-heading hover:bg-accent/5">
-                Gunakan alamat ini: {query.trim()}
-              </button>
-            </div>
-          )}
+          ))}
+        </div>
+      )}
+
+      {failed && query.trim().length >= 5 && (
+        <div className="mt-2 space-y-2">
+          <p className="text-[11px] text-text-muted">Alamat tidak ditemukan di peta. Ketik alamat lengkap lalu klik tombol di bawah.</p>
+          <button type="button" onClick={selectTypedAddress} className="w-full rounded-xl border-2 border-accent/40 px-4 py-3 text-left text-sm font-semibold text-heading hover:bg-accent/5 transition-colors">
+            ✅ Gunakan: {query.trim()}
+          </button>
         </div>
       )}
     </div>
