@@ -27,9 +27,14 @@ const fetchOsmAddresses = async (input) => {
   url.searchParams.set('limit', '5')
   url.searchParams.set('q', input)
 
-  const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } })
+  const response = await fetch(url.toString(), { headers: NOMINATIM_HEADERS })
   if (!response.ok) throw new Error('Gagal mencari alamat.')
   return response.json()
+}
+
+const NOMINATIM_HEADERS = {
+  'Accept': 'application/json',
+  'User-Agent': 'PuthicSari/1.0 (puthicsari.com)',
 }
 
 const reverseGeocode = async (lat, lon) => {
@@ -40,7 +45,7 @@ const reverseGeocode = async (lat, lon) => {
   url.searchParams.set('lat', String(lat))
   url.searchParams.set('lon', String(lon))
 
-  const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } })
+  const response = await fetch(url.toString(), { headers: NOMINATIM_HEADERS })
   if (!response.ok) throw new Error('Gagal reverse geocode.')
   return response.json()
 }
@@ -151,6 +156,7 @@ export default function AddressSearch({ onSelect, onClear }) {
           const place = await reverseGeocode(latitude, longitude)
 
           if (!place?.display_name) {
+            console.error('Reverse geocode returned empty:', place)
             setGeoError('Gagal mendapatkan alamat dari lokasi.')
             setGeoLoading(false)
             return
