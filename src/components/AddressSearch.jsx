@@ -32,6 +32,19 @@ const fetchOsmAddresses = async (input) => {
   return response.json()
 }
 
+const reverseGeocode = async (lat, lon) => {
+  const url = new URL('https://nominatim.openstreetmap.org/reverse')
+  url.searchParams.set('format', 'jsonv2')
+  url.searchParams.set('addressdetails', '1')
+  url.searchParams.set('countrycodes', 'id')
+  url.searchParams.set('lat', String(lat))
+  url.searchParams.set('lon', String(lon))
+
+  const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } })
+  if (!response.ok) throw new Error('Gagal reverse geocode.')
+  return response.json()
+}
+
 const searchVerifiedAddresses = async (input) => {
   for (const query of addressQueries(input)) {
     const results = await fetchOsmAddresses(query)
@@ -50,8 +63,10 @@ export default function AddressSearch({ onSelect, onClear }) {
   const [query, setQuery] = useState('')
   const [places, setPlaces] = useState([])
   const [loading, setLoading] = useState(false)
+  const [geoLoading, setGeoLoading] = useState(false)
   const [selectedName, setSelectedName] = useState('')
   const [failed, setFailed] = useState(false)
+  const [geoError, setGeoError] = useState('')
 
   useEffect(() => {
     const input = query.trim()
@@ -85,6 +100,7 @@ export default function AddressSearch({ onSelect, onClear }) {
     setQuery(address)
     setPlaces([])
     setFailed(false)
+    setGeoError('')
     onSelect({
       address,
       city: area?.city || city,
@@ -115,19 +131,95 @@ export default function AddressSearch({ onSelect, onClear }) {
     setSelectedName('')
     setPlaces([])
     setFailed(false)
+    setGeoError('')
     onClear?.()
+  }
+
+  const useMyLocation = () => {
+    if (!navigator.geolocation) {
+      setGeoError('Browser tidak mendukung geolocation.')
+      return
+    }
+
+    setGeoLoading(true)
+    setGeoError('')
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords
+          const place = await reverseGeocode(latitude, longitude)
+
+          if (!place?.display_name) {
+            setGeoError('Gagal mendapatkan alamat dari lokasi.')
+            setGeoLoading(false)
+            return
+          }
+
+          await selectAddress({
+            address: place.display_name,
+            city: getCity(place),
+            postalCode: getPostalCode(place),
+            latitude,
+            longitude,
+          })
+        } catch {
+          setGeoError('Gagal memproses lokasi. Coba lagi.')
+        } finally {
+          setGeoLoading(false)
+        }
+      },
+      (err) => {
+        setGeoLoading(false)
+        if (err.code === 1) {
+          setGeoError('Izin lokasi ditolak. Aktifkan izin lokasi di browser.')
+        } else if (err.code === 2) {
+          setGeoError('Lokasi tidak tersedia. Coba lagi.')
+        } else if (err.code === 3) {
+          setGeoError('Timeout mendapatkan lokasi. Coba lagi.')
+        } else {
+          setGeoError('Gagal mendapatkan lokasi.')
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    )
   }
 
   return (
     <div className="relative">
       <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Cari Alamat Pengiriman</label>
+
+      {/* Gunakan Lokasi Saya button */}
+      <button
+        type="button"
+        onClick={useMyLocation}
+        disabled={geoLoading}
+        className="w-full flex items-center justify-center gap-2 mb-3 px-4 py-2.5 rounded-xl border border-dashed border-accent/40 text-sm font-medium text-accent hover:bg-accent/5 transition-colors disabled:opacity-50"
+      >
+        {geoLoading ? (
+          <>
+            <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+            <span>Mendapatkan lokasi...</span>
+          </>
+        ) : (
+          <>
+            <HiOutlineLocationMarker className="text-base" />
+            <span>Gunakan Lokasi Saya</span>
+          </>
+        )}
+      </button>
+
+      {geoError && (
+        <p className="text-[11px] text-red-500 mb-2">{geoError}</p>
+      )}
+
       <div className="relative">
         <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-base pointer-events-none" />
         <input
           type="text"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setSelectedName(''); onClear?.() }}
-          placeholder="Ketik alamat lengkap, lalu pilih dari hasil pencarian"
+          placeholder="Atau ketik alamat manual, lalu pilih dari hasil pencarian"
           className="w-full border border-border rounded-xl pl-10 pr-10 py-2.5 text-sm text-heading focus:border-accent focus:outline-none transition-colors bg-white placeholder:text-text-muted"
           autoComplete="off"
         />
@@ -137,7 +229,7 @@ export default function AddressSearch({ onSelect, onClear }) {
           </button>
         )}
       </div>
-      <p className="text-[10px] text-text-muted mt-1.5">Wajib pilih alamat dari hasil pencarian agar alamat terverifikasi dan ongkir bisa dihitung.</p>
+      <p className="text-[10px] text-text-muted mt-1.5">Wajib pilih alamat dari hasil pencarian atau gunakan lokasi GPS agar alamat terverifikasi dan ongkir bisa dihitung.</p>
 
       {(loading || places.length > 0 || failed) && (
         <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-white shadow-soft">
