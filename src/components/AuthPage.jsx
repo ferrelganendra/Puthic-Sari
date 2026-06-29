@@ -280,13 +280,12 @@ export default function AuthPage({ onAuth, initialTab = 'login' }) {
               )}
             </div>
           )}
-        </div>
 
-        {/* Back to home */}
-        <div className="text-center mt-6">
-          <a href="/" className="text-sm text-body hover:text-heading transition-colors inline-flex items-center gap-1.5">
-            <span>←</span> Kembali ke Beranda
-          </a>
+          <div className="mt-6 border-t border-border/70 pt-4 text-center">
+            <a href="/" className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium uppercase tracking-wide text-body transition-colors hover:bg-background hover:text-heading">
+              <span className="text-base leading-none">←</span> Kembali ke Beranda
+            </a>
+          </div>
         </div>
       </div>
     </div>

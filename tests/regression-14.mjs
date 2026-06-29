@@ -266,6 +266,12 @@ await test(17, 'Remember me controls Supabase auth storage', async () => {
   assert.equal((adminSource.match(/Ingat saya/g) || []).length >= 1, true)
 })
 
+await test(18, 'AuthPage keeps home link inside auth card', async () => {
+  const source = read('src/components/AuthPage.jsx')
+  assert.match(source, /border-t border-border\/70[\s\S]*Kembali ke Beranda[\s\S]*<\/div>\n\s*<\/div>\n\s*<\/div>/)
+  assert.doesNotMatch(source, /\{\/\* Back to home \*\/\}/)
+})
+
 function readdirRecursive(dir, pattern) {
   if (!existsSync(dir)) return []
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
