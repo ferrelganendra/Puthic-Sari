@@ -43,7 +43,7 @@ function haversineKm(a: { lat: number; lon: number }, b: { lat: number; lon: num
   return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h))
 }
 
-const INSTANT_MAX_KM = Number(Deno.env.get('INSTANT_MAX_KM') || 40)
+const INSTANT_MAX_KM = Number(Deno.env.get('INSTANT_MAX_KM') || 20)
 
 function isWithinInstantZone(originData: ReturnType<typeof origin>, destination: BiteshipDestination) {
   if (!hasCoordinates(originData, destination)) return false
