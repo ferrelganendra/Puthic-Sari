@@ -234,6 +234,36 @@ await test(14, '.env.example lengkap', async () => {
   assert.deepEqual(missing, [])
 })
 
+await test(15, 'Checkout pending/closed is not paid success', async () => {
+  const source = read('src/components/Checkout.jsx')
+  assert.match(source, /const isPaid = createdOrder\.paymentState === 'success'/)
+  assert.doesNotMatch(source, /\['success', 'pending'\]\.includes\(createdOrder\.paymentState\)/)
+  assert.match(source, /'Menunggu Pembayaran'/)
+  assert.match(source, /Order dibuat, tapi pembayaran belum selesai\./)
+})
+
+await test(16, 'Admin can delete checkout orders via RLS', async () => {
+  const sql = read('supabase/migrations/202606290001_admin_delete_checkout_orders.sql')
+  assert.match(sql, /grant delete on public\.checkout_orders to authenticated/i)
+  assert.match(sql, /grant delete on public\.checkout_order_items to authenticated/i)
+  assert.match(sql, /on public\.checkout_order_items for delete[\s\S]*using \(public\.is_admin\(\)\)/i)
+  assert.match(sql, /on public\.checkout_orders for delete[\s\S]*using \(public\.is_admin\(\)\)/i)
+})
+
+await test(17, 'Remember me controls Supabase auth storage', async () => {
+  const supabaseSource = read('src/lib/supabase.js')
+  const authSource = read('src/components/AuthPage.jsx')
+  const adminSource = read('src/components/AdminDashboard.jsx')
+  assert.match(supabaseSource, /const AUTH_REMEMBER_KEY = 'ps_auth_remember'/)
+  assert.match(supabaseSource, /window\.localStorage\.getItem\(AUTH_REMEMBER_KEY\) !== 'false'/)
+  assert.match(supabaseSource, /window\.sessionStorage\.getItem\(key\)/)
+  assert.match(supabaseSource, /export function setAuthRemembered\(remember\)/)
+  assert.match(authSource, /setAuthRemembered\(rememberMe\)[\s\S]*signInWithTimeout\(email, password\)/)
+  assert.match(adminSource, /setAuthRemembered\(rememberMe\)[\s\S]*signInWithPassword\(\{ email, password \}\)/)
+  assert.equal((authSource.match(/Ingat saya/g) || []).length >= 1, true)
+  assert.equal((adminSource.match(/Ingat saya/g) || []).length >= 1, true)
+})
+
 function readdirRecursive(dir, pattern) {
   if (!existsSync(dir)) return []
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

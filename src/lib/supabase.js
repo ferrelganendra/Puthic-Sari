@@ -7,8 +7,40 @@ if (!supabaseUrl || !supabaseAnonKey) {
  if (import.meta.env.DEV) console.warn('Supabase env vars missing — using offline mode.')
 }
 
+const AUTH_REMEMBER_KEY = 'ps_auth_remember'
+
+function authStorage() {
+ if (typeof window === 'undefined') return undefined
+ const remembered = () => window.localStorage.getItem(AUTH_REMEMBER_KEY) !== 'false'
+ return {
+  getItem(key) {
+   return remembered() ? window.localStorage.getItem(key) : window.sessionStorage.getItem(key)
+  },
+  setItem(key, value) {
+   const storage = remembered() ? window.localStorage : window.sessionStorage
+   storage.setItem(key, value)
+  },
+  removeItem(key) {
+   window.localStorage.removeItem(key)
+   window.sessionStorage.removeItem(key)
+  },
+ }
+}
+
+export function setAuthRemembered(remember) {
+ if (typeof window === 'undefined') return
+ window.localStorage.setItem(AUTH_REMEMBER_KEY, remember ? 'true' : 'false')
+}
+
 const supabaseClient = supabaseUrl && supabaseAnonKey
- ? createClient(supabaseUrl, supabaseAnonKey)
+ ? createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+   persistSession: true,
+   autoRefreshToken: true,
+   detectSessionInUrl: true,
+   storage: authStorage(),
+  },
+ })
  : null
 
 export function requireSupabase() {

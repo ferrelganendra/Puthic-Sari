@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { HiOutlineEye, HiOutlineEyeOff, HiCheck } from 'react-icons/hi'
-import { supabase } from '../lib/supabase'
+import { setAuthRemembered, supabase } from '../lib/supabase'
 import { ensureProfile } from '../lib/auth'
 import { siteAssetUrl } from '../lib/assetUrl'
 import { explainError } from '../lib/errorMessages'
@@ -44,9 +44,11 @@ export default function AuthPage({ onAuth, initialTab = 'login' }) {
   const [showForgot, setShowForgot] = useState(false)
   const [forgotEmail, setForgotEmail] = useState('')
   const [forgotSent, setForgotSent] = useState(false)
+  const [rememberMe, setRememberMe] = useState(true)
 
   const handleLogin = async (e) => {
     e.preventDefault(); setLoading(true); setError('')
+    setAuthRemembered(rememberMe)
     const { data, error: authError } = await signInWithTimeout(email, password)
     if (authError) { setError('Email atau password salah.'); setLoading(false); return }
     const profile = await ensureProfileWithTimeout(data.user)
@@ -171,6 +173,18 @@ export default function AuthPage({ onAuth, initialTab = 'login' }) {
                     placeholder="Ketik ulang password"
                   />
                 </div>
+              )}
+
+              {tab === 'login' && (
+                <label className="flex items-center gap-2 text-sm text-body">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={e => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 rounded border-border text-heading focus:ring-heading"
+                  />
+                  Ingat saya
+                </label>
               )}
 
               {/* Error */}
