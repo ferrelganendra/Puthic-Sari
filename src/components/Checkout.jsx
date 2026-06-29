@@ -390,9 +390,10 @@ export default function Checkout({ onClose }) {
     }
   }
 
-  // Success screen
+  // Success / pending screen
   if (createdOrder) {
-    const isPaid = ['success', 'pending'].includes(createdOrder.paymentState)
+    const isPaid = createdOrder.paymentState === 'success'
+    const isPending = ['pending', 'closed'].includes(createdOrder.paymentState) || createdOrder.status === 'pending_payment'
     const whatsappText = encodeURIComponent(
       `Halo Puthic Sari, saya sudah order dari website.\nOrder: ${createdOrder.orderNumber}\nStatus: ${createdOrder.paymentState || createdOrder.status || '-'}`
     )
@@ -401,14 +402,14 @@ export default function Checkout({ onClose }) {
         <div className="mx-auto max-w-xl py-8 px-4">
           <div className="bg-white rounded-2xl shadow-soft border border-border/50 overflow-hidden">
             <div className="flex items-center justify-between border-b border-border px-6 py-5">
-              <h2 className="font-medium text-heading">{isPaid ? 'Pembayaran Berhasil' : 'Order Dibuat'}</h2>
+              <h2 className="font-medium text-heading">{isPaid ? 'Pembayaran Berhasil' : 'Menunggu Pembayaran'}</h2>
               <button type="button" onClick={onClose} className="text-gray-400 hover:text-heading transition-colors"><HiX className="text-xl" /></button>
             </div>
             <div className="p-6">
               <div className={`border rounded-xl p-5 ${isPaid ? 'border-green-100 bg-green-50' : 'border-yellow-100 bg-yellow-50'}`}>
               {isPaid ? <HiCheckCircle className="mb-3 text-3xl text-green-600" /> : <HiExclamationCircle className="mb-3 text-3xl text-yellow-500" />}
               <p className="font-semibold text-heading">
-                {isPaid ? 'Pembayaran diterima. Pengiriman diproses otomatis.' : 'Order dibuat tapi belum dibayar.'}
+                {isPaid ? 'Pembayaran diterima. Pengiriman diproses otomatis.' : isPending ? 'Order dibuat, tapi pembayaran belum selesai.' : 'Order dibuat tapi belum dibayar.'}
               </p>
               <div className="mt-4 space-y-2 text-sm text-body">
                 <div className="flex justify-between"><span>Order</span><span className="font-mono text-heading">{createdOrder.orderNumber}</span></div>
