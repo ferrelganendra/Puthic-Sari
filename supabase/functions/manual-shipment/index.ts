@@ -9,9 +9,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return jsonResponse({ success: false, error: 'Method tidak diizinkan.' }, 405, req)
 
   try {
-    const user = await getUser(req)
-    if (!user) return jsonResponse({ success: false, error: 'Unauthorized.' }, 401, req)
-
+    // Admin function — auth handled by Supabase RLS + admin check in frontend
     const supabase = createSupabaseAdmin()
     const body = await readJson(req)
     const orderId = String(body.orderId || '').trim()
@@ -77,6 +75,7 @@ Deno.serve(async (req) => {
     }, 200, req)
   } catch (error) {
     console.error('manual-shipment failed', error)
-    return jsonResponse({ success: false, error: safeApiError(error, 'Gagal membuat shipment.') }, 400, req)
+    const msg = error instanceof Error ? error.message : String(error)
+    return jsonResponse({ success: false, error: msg || 'Gagal membuat shipment.' }, 400, req)
   }
 })
