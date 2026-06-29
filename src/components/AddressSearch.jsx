@@ -83,6 +83,7 @@ export default function AddressSearch({ onSelect, onClear }) {
   const [selectedName, setSelectedName] = useState('')
   const [failed, setFailed] = useState(false)
   const [geoError, setGeoError] = useState('')
+  const [geoCoords, setGeoCoords] = useState(null) // { latitude, longitude, city, postalCode }
 
   useEffect(() => {
     const input = query.trim()
@@ -111,6 +112,12 @@ export default function AddressSearch({ onSelect, onClear }) {
   }, [query, selectedName])
 
   const selectAddress = async ({ address, city = '', postalCode = '', latitude = 0, longitude = 0, needsDetail = false }) => {
+    // Merge GPS coordinates if available (user typed address manually)
+    const finalLat = latitude || geoCoords?.latitude || 0
+    const finalLon = longitude || geoCoords?.longitude || 0
+    const finalCity = city || geoCoords?.city || ''
+    const finalPostal = postalCode || geoCoords?.postalCode || ''
+
     const area = needsDetail ? null : await searchBiteshipArea(address)
     setSelectedName(address)
     setQuery(address)
@@ -119,12 +126,12 @@ export default function AddressSearch({ onSelect, onClear }) {
     setGeoError('')
     onSelect({
       address,
-      city: area?.city || city,
-      postalCode: area?.postalCode || postalCode,
+      city: area?.city || finalCity,
+      postalCode: area?.postalCode || finalPostal,
       areaId: area?.id || '',
       areaName: area?.name || '',
-      latitude,
-      longitude,
+      latitude: finalLat,
+      longitude: finalLon,
       needsDetail,
     })
   }
@@ -148,6 +155,7 @@ export default function AddressSearch({ onSelect, onClear }) {
     setPlaces([])
     setFailed(false)
     setGeoError('')
+    setGeoCoords(null)
     onClear?.()
   }
 
@@ -173,16 +181,9 @@ export default function AddressSearch({ onSelect, onClear }) {
             return
           }
 
-          // GPS coordinates saved — user types street manually
-          const area = `${getCity(place) || ''} ${getPostalCode(place) ? '- ' + getPostalCode(place) : ''}`.trim()
-
-          await selectAddress({
-            address: `📍 Lokasi GPS tersimpan. Ketik alamat lengkap: ${place.display_name}`,
-            city: getCity(place),
-            postalCode: getPostalCode(place),
-            latitude,
-            longitude,
-          })
+          // Save coordinates only — user types street address manually
+          setGeoCoords({ latitude, longitude, city: getCity(place), postalCode: getPostalCode(place) })
+          setGeoError('')
         } catch (err) {
           console.error('Geolocation error:', err)
           setGeoError('Gagal memproses lokasi. Coba lagi.')
@@ -234,6 +235,17 @@ export default function AddressSearch({ onSelect, onClear }) {
         <p className="text-[11px] text-red-500 mb-2">{geoError}</p>
       )}
 
+      {geoCoords && !selectedName && (
+        <div className="flex items-center gap-2 mb-3 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
+          <span className="text-sm">📍</span>
+          <div>
+            <p className="font-medium">Koordinat tersimpan!</p>
+            {geoCoords.city && <p className="text-green-600">{geoCoords.city} {geoCoords.postalCode ? `· ${geoCoords.postalCode}` : ''}</p>}
+          </div>
+          <button type="button" onClick={() => { setGeoCoords(null); clearSearch() }} className="ml-auto text-green-500 hover:text-green-700 underline text-[11px]">Hapus</button>
+        </div>
+      )}
+
       <div className="relative">
         <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-base pointer-events-none" />
         <input
@@ -250,7 +262,11 @@ export default function AddressSearch({ onSelect, onClear }) {
           </button>
         )}
       </div>
-      <p className="text-[10px] text-text-muted mt-1.5">Klik "Gunakan Lokasi Saya" dulu untuk menyimpan koordinat, lalu ketik alamat lengkap di atas.</p>
+      <p className="text-[10px] text-text-muted mt-1.5">
+        {geoCoords
+          ? '✅ Koordinat GPS sudah tersimpan. Sekarang ketik alamat lengkap (nama jalan, nomor rumah) di atas.'
+          : 'Klik "Gunakan Lokasi Saya" dulu untuk menyimpan koordinat, lalu ketik alamat lengkap.'}
+      </p>
 
       {(loading || places.length > 0 || failed) && (
         <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-white shadow-soft">
