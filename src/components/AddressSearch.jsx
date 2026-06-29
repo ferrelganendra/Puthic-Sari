@@ -173,28 +173,13 @@ export default function AddressSearch({ onSelect, onClear }) {
             return
           }
 
-          // Check if result has street-level detail
-          const addr = place.address || {}
-          const hasStreet = addr.road || addr.pedestrian || addr.footway || addr.house_number
-          let finalPlace = place
-
-          if (!hasStreet) {
-            // No street detail — try forward search with coordinates
-            const nearby = await searchNearbyStreets(latitude, longitude)
-            // Pick the result closest to our coordinates that has a street name
-            const withStreet = nearby.find(p => p.address?.road || p.address?.pedestrian)
-            if (withStreet) finalPlace = withStreet
-          }
-
-          // Build a readable address with street if available
-          const street = finalPlace.address?.road || finalPlace.address?.pedestrian || finalPlace.address?.footway || ''
-          const number = finalPlace.address?.house_number || ''
-          const fullAddress = finalPlace.display_name
+          // GPS coordinates saved — user types street manually
+          const area = `${getCity(place) || ''} ${getPostalCode(place) ? '- ' + getPostalCode(place) : ''}`.trim()
 
           await selectAddress({
-            address: street ? `${street} ${number}`.trim() + ', ' + fullAddress.split(',').slice(1).join(',').trim() : fullAddress,
-            city: getCity(finalPlace),
-            postalCode: getPostalCode(finalPlace),
+            address: `📍 Lokasi GPS tersimpan. Ketik alamat lengkap: ${place.display_name}`,
+            city: getCity(place),
+            postalCode: getPostalCode(place),
             latitude,
             longitude,
           })
@@ -255,7 +240,7 @@ export default function AddressSearch({ onSelect, onClear }) {
           type="text"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setSelectedName(''); onClear?.() }}
-          placeholder="Atau ketik alamat manual, lalu pilih dari hasil pencarian"
+          placeholder="Ketik nama jalan, nomor rumah, RT/RW..."
           className="w-full border border-border rounded-xl pl-10 pr-10 py-2.5 text-sm text-heading focus:border-accent focus:outline-none transition-colors bg-white placeholder:text-text-muted"
           autoComplete="off"
         />
@@ -265,7 +250,7 @@ export default function AddressSearch({ onSelect, onClear }) {
           </button>
         )}
       </div>
-      <p className="text-[10px] text-text-muted mt-1.5">Wajib pilih alamat dari hasil pencarian atau gunakan lokasi GPS agar alamat terverifikasi dan ongkir bisa dihitung.</p>
+      <p className="text-[10px] text-text-muted mt-1.5">Klik "Gunakan Lokasi Saya" dulu untuk menyimpan koordinat, lalu ketik alamat lengkap di atas.</p>
 
       {(loading || places.length > 0 || failed) && (
         <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-white shadow-soft">
