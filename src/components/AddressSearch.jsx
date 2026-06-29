@@ -269,7 +269,7 @@ export default function AddressSearch({ onSelect, onClear }) {
       </p>
 
       {(loading || places.length > 0 || failed) && (
-        <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-white shadow-soft">
+        <div className="absolute z-20 mt-2 w-full rounded-xl border border-border bg-white shadow-soft max-h-60 overflow-auto">
           {loading ? (
             <div className="px-3 py-2 text-xs text-text-muted">Mencari alamat...</div>
           ) : places.length > 0 ? places.map((place) => (
