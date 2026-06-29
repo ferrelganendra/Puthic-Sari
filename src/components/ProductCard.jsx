@@ -1,5 +1,5 @@
 import { memo, useState } from 'react'
-import { HiHeart, HiSparkles } from 'react-icons/hi'
+import { HiHeart, HiSparkles, HiOutlineStar } from 'react-icons/hi'
 import { useWishlist } from '../context/WishlistContext'
 import { productImageUrl } from '../lib/assetUrl'
 
@@ -81,6 +81,11 @@ function ProductCard({ product, onViewDetail, priority = false }) {
             <span className="badge-soldout">Sold Out</span>
           ) : hasDiscount ? (
             <span className="badge-sale">Sale {discount}%</span>
+          ) : badgeLabel === 'Best Seller' ? (
+            <span className="inline-flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-white bg-gradient-to-r from-amber-600 to-amber-800 rounded-full shadow-md">
+              <HiOutlineStar className="text-[11px]" />
+              Best Seller
+            </span>
           ) : badgeLabel === 'Baru' || badgeLabel === 'New' ? (
             <span className="inline-flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-white bg-gradient-to-r from-primary to-primary-dark rounded-full shadow-md">
               <HiSparkles className="text-[11px]" />
