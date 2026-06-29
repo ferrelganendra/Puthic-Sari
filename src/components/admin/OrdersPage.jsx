@@ -245,7 +245,7 @@ export default function OrdersPage() {
   setActionLoading(`shipment-${orderId}`)
   try {
    const { data, error: fnErr } = await supabase.functions.invoke('manual-shipment', { body: { orderId } })
-   if (fnErr) throw fnErr
+   if (fnErr) throw new Error(data?.error || fnErr.message || 'Gagal membuat shipment.')
    if (!data.success) throw new Error(data.error)
    alert('Shipment berhasil dibuat! Waybill: ' + (data.shipment?.waybillId || '-'))
    fetchOrders()
