@@ -35,6 +35,24 @@ function hasCoordinates(originData: ReturnType<typeof origin>, destination: Bite
   return Boolean(originData.latitude && originData.longitude && destination.latitude && destination.longitude)
 }
 
+function haversineKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
+  const R = 6371
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180
+  const dLon = ((b.lon - a.lon) * Math.PI) / 180
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLon / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h))
+}
+
+const INSTANT_MAX_KM = Number(Deno.env.get('INSTANT_MAX_KM') || 40)
+
+function isWithinInstantZone(originData: ReturnType<typeof origin>, destination: BiteshipDestination) {
+  if (!hasCoordinates(originData, destination)) return false
+  return haversineKm(
+    { lat: originData.latitude, lon: originData.longitude },
+    { lat: Number(destination.latitude), lon: Number(destination.longitude) },
+  ) <= INSTANT_MAX_KM
+}
+
 function isInstantRate(rate: BiteshipRate) {
   return ['gojek', 'grab'].includes(rate.courierCompany.toLowerCase()) || rate.courierService.toLowerCase() === 'instant'
 }
@@ -131,6 +149,7 @@ export async function getRates(destination: BiteshipDestination, items: Array<Re
 
   try {
     const coordinatesReady = hasCoordinates(originData, destination)
+    const instantZone = isWithinInstantZone(originData, destination)
     const data = await request('/v1/rates/couriers', {
       method: 'POST',
       body: JSON.stringify({
@@ -163,7 +182,7 @@ export async function getRates(destination: BiteshipDestination, items: Array<Re
         type: String(rate.type || ''),
       }))
       .filter((rate: BiteshipRate) => rate.courierCompany && rate.courierService && rate.price >= 0)
-      .filter((rate: BiteshipRate) => coordinatesReady || !isInstantRate(rate))
+      .filter((rate: BiteshipRate) => instantZone || !isInstantRate(rate))
       .sort((a: BiteshipRate, b: BiteshipRate) => a.price - b.price)
   } catch (error) {
     if (testModeEnabled()) return dummyRates()
@@ -200,8 +219,8 @@ export async function createShipment(order: Record<string, unknown>, items: Arra
   const selectedCourier = order.selected_courier as BiteshipRate
   const destination = { postalCode: Number(order.destination_postal_code || 0), latitude: destinationLatitude, longitude: destinationLongitude }
   const coordinatesReady = hasCoordinates(originData, destination)
-  if (isInstantRate(selectedCourier) && !coordinatesReady) {
-    throw new Error('Gojek/Grab Instant butuh koordinat toko dan alamat tujuan. Pilih layanan reguler atau lengkapi koordinat.')
+  if (isInstantRate(selectedCourier) && !isWithinInstantZone(originData, destination)) {
+    throw new Error('Gojek/Grab Instant hanya tersedia untuk area Jogja sekitar ( maks. 40 km dari toko ). Pilih layanan reguler atau cek ulang alamat tujuan.')
   }
 
   return await request('/v1/orders', {
