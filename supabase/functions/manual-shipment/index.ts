@@ -76,6 +76,6 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('manual-shipment failed', error)
     const msg = error instanceof Error ? error.message : String(error)
-    return jsonResponse({ success: false, error: msg || 'Gagal membuat shipment.' }, 400, req)
+    return jsonResponse({ success: false, error: msg || 'Gagal membuat shipment.' }, 200, req)
   }
 })
