@@ -89,15 +89,20 @@ function LoginForm({ onLogin, onClose }) {
        </button>
       </div>
       </div>
-      <label className="flex items-center gap-2 text-sm text-gray-600">
-       <input
-        type="checkbox"
-        checked={rememberMe}
-        onChange={e => setRememberMe(e.target.checked)}
-        className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
-       />
-       Ingat saya
-      </label>
+      <button
+       type="button"
+       onClick={() => setRememberMe(!rememberMe)}
+       className={`flex w-full items-center justify-between rounded-xl border px-3.5 py-3 text-left transition-all ${rememberMe ? 'border-gray-900/15 bg-gray-900/[0.03] shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'}`}
+       aria-pressed={rememberMe}
+      >
+       <span>
+        <span className="block text-sm font-medium text-gray-800">Ingat saya</span>
+        <span className="block text-[11px] text-gray-400">Tetap login di perangkat pribadi.</span>
+       </span>
+       <span className={`relative h-6 w-11 rounded-full transition-colors ${rememberMe ? 'bg-gray-900' : 'bg-gray-200'}`}>
+        <span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${rememberMe ? 'translate-x-6' : 'translate-x-1'}`} />
+       </span>
+      </button>
       {error && (
        <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3">
 

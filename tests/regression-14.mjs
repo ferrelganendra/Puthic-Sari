@@ -260,6 +260,8 @@ await test(17, 'Remember me controls Supabase auth storage', async () => {
   assert.match(supabaseSource, /export function setAuthRemembered\(remember\)/)
   assert.match(authSource, /setAuthRemembered\(rememberMe\)[\s\S]*signInWithTimeout\(email, password\)/)
   assert.match(adminSource, /setAuthRemembered\(rememberMe\)[\s\S]*signInWithPassword\(\{ email, password \}\)/)
+  assert.match(authSource, /aria-pressed=\{rememberMe\}/)
+  assert.match(adminSource, /aria-pressed=\{rememberMe\}/)
   assert.equal((authSource.match(/Ingat saya/g) || []).length >= 1, true)
   assert.equal((adminSource.match(/Ingat saya/g) || []).length >= 1, true)
 })

@@ -176,15 +176,20 @@ export default function AuthPage({ onAuth, initialTab = 'login' }) {
               )}
 
               {tab === 'login' && (
-                <label className="flex items-center gap-2 text-sm text-body">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={e => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-heading focus:ring-heading"
-                  />
-                  Ingat saya
-                </label>
+                <button
+                  type="button"
+                  onClick={() => setRememberMe(!rememberMe)}
+                  className={`group flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition-all ${rememberMe ? 'border-accent/30 bg-accent/5 shadow-[0_10px_30px_rgba(91,74,66,0.08)]' : 'border-border bg-white hover:border-accent/30'}`}
+                  aria-pressed={rememberMe}
+                >
+                  <span>
+                    <span className="block text-sm font-medium text-heading">Ingat saya</span>
+                    <span className="mt-0.5 block text-xs text-body">Tetap masuk di perangkat pribadi.</span>
+                  </span>
+                  <span className={`relative h-7 w-12 rounded-full transition-colors ${rememberMe ? 'bg-heading' : 'bg-border'}`}>
+                    <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${rememberMe ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </span>
+                </button>
               )}
 
               {/* Error */}
