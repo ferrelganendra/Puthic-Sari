@@ -6,6 +6,27 @@ const DEFAULT_ITEM_WIDTH = Number(Deno.env.get('BITESHIP_DEFAULT_ITEM_WIDTH_CM')
 const DEFAULT_ITEM_HEIGHT = Number(Deno.env.get('BITESHIP_DEFAULT_ITEM_HEIGHT_CM') || 10)
 const MAX_ITEM_QUANTITY = 10
 
+function positiveNumber(value: unknown, fallback: number) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : fallback
+}
+
+function itemDimensions(product: Record<string, unknown>) {
+  return {
+    length: positiveNumber(product.length_cm, DEFAULT_ITEM_LENGTH),
+    width: positiveNumber(product.width_cm, DEFAULT_ITEM_WIDTH),
+    height: positiveNumber(product.height_cm, DEFAULT_ITEM_HEIGHT),
+  }
+}
+
+function chargeableWeight(product: Record<string, unknown>) {
+  const actualWeight = positiveNumber(product.weight_grams, DEFAULT_ITEM_WEIGHT)
+  if (!product.length_cm || !product.width_cm || !product.height_cm) return actualWeight
+  const { length, width, height } = itemDimensions(product)
+  const volumetricWeight = Math.ceil((length * width * height) / 6)
+  return Math.max(actualWeight, volumetricWeight)
+}
+
 type CartInput = Array<{ id: number | string; quantity?: number | string }>
 
 function finalPrice(product: { price: number; discount_percent?: number | null }) {
@@ -31,7 +52,7 @@ export async function buildCheckoutItems(cart: CartInput) {
   const supabase = createSupabaseAdmin()
   const { data: products, error } = await supabase
     .from('products')
-    .select('id,name,description,category,price,discount_percent,is_active,is_sold_out')
+    .select('id,name,description,category,price,discount_percent,is_active,is_sold_out,weight_grams,length_cm,width_cm,height_cm')
     .in('id', ids)
 
   if (error) throw error
@@ -44,6 +65,7 @@ export async function buildCheckoutItems(cart: CartInput) {
     if (product.is_sold_out) throw new Error(`${product.name} sedang sold out.`)
 
     const unitPrice = finalPrice(product)
+    const dimensions = itemDimensions(product)
     return {
       product,
       productId: Number(product.id),
@@ -52,6 +74,10 @@ export async function buildCheckoutItems(cart: CartInput) {
       quantity: requestedItem.quantity,
       unitPrice,
       subtotal: unitPrice * requestedItem.quantity,
+      length: dimensions.length,
+      width: dimensions.width,
+      height: dimensions.height,
+      weight: chargeableWeight(product),
     }
   })
 
@@ -65,24 +91,28 @@ export function biteshipItems(items: Awaited<ReturnType<typeof buildCheckoutItem
     description: item.description,
     value: item.unitPrice,
     quantity: item.quantity,
-    length: DEFAULT_ITEM_LENGTH,
-    width: DEFAULT_ITEM_WIDTH,
-    height: DEFAULT_ITEM_HEIGHT,
-    weight: DEFAULT_ITEM_WEIGHT,
+    length: item.length,
+    width: item.width,
+    height: item.height,
+    weight: item.weight,
   }))
 }
 
 export function biteshipItemsFromOrderRows(items: Array<Record<string, unknown>>) {
-  return items.map((item) => ({
-    name: String(item.product_name || 'Produk Puthic Sari').slice(0, 120),
-    description: String(item.product_description || 'Buket bunga').slice(0, 180),
-    value: Number(item.unit_price || 0),
-    quantity: Number(item.quantity || 1),
-    length: DEFAULT_ITEM_LENGTH,
-    width: DEFAULT_ITEM_WIDTH,
-    height: DEFAULT_ITEM_HEIGHT,
-    weight: DEFAULT_ITEM_WEIGHT,
-  }))
+  return items.map((item) => {
+    const snapshot = (item.product_snapshot || {}) as Record<string, unknown>
+    const dimensions = itemDimensions(snapshot)
+    return {
+      name: String(item.product_name || 'Produk Puthic Sari').slice(0, 120),
+      description: String(item.product_description || 'Buket bunga').slice(0, 180),
+      value: Number(item.unit_price || 0),
+      quantity: Number(item.quantity || 1),
+      length: dimensions.length,
+      width: dimensions.width,
+      height: dimensions.height,
+      weight: chargeableWeight(snapshot),
+    }
+  })
 }
 
 export function midtransItems(items: Awaited<ReturnType<typeof buildCheckoutItems>>['items'], shippingAmount = 0) {

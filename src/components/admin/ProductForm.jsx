@@ -23,9 +23,13 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
   description: product?.description || '',
   price: product?.price || '',
   category_id: product?.category_id || '',
-  discount_percent: product?.discount_percent || 0,
-  images: product?.images || [],
-  is_active: product?.is_active ?? true,
+   discount_percent: product?.discount_percent || 0,
+   weight_grams: product?.weight_grams || 500,
+   length_cm: product?.length_cm || '',
+   width_cm: product?.width_cm || '',
+   height_cm: product?.height_cm || '',
+   images: product?.images || [],
+   is_active: product?.is_active ?? true,
   is_best_seller: product?.is_best_seller ?? false,
   is_sold_out: product?.is_sold_out ?? false,
   is_new_arrival: product?.is_new_arrival ?? false,
@@ -152,9 +156,13 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
    price: parseInt(form.price),
    category_id: form.category_id || null,
    category: categories.find(c => c.id == form.category_id)?.name || '',
-   discount_percent: parseInt(form.discount_percent) || 0,
-   images: form.images,
-   is_active: form.is_active,
+    discount_percent: parseInt(form.discount_percent) || 0,
+    weight_grams: Math.max(1, parseInt(form.weight_grams) || 500),
+    length_cm: form.length_cm ? Math.max(1, parseInt(form.length_cm) || 0) : null,
+    width_cm: form.width_cm ? Math.max(1, parseInt(form.width_cm) || 0) : null,
+    height_cm: form.height_cm ? Math.max(1, parseInt(form.height_cm) || 0) : null,
+    images: form.images,
+    is_active: form.is_active,
   }
 
   const flagData = {
@@ -298,8 +306,45 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
       </div>
      </div>
 
-     {/* Preview harga diskon */}
-     {form.price && form.discount_percent > 0 && (
+      {/* Berat Pengiriman */}
+      <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-4">
+       <label className="block text-sm font-medium text-gray-700 mb-1.5">Berat Kirim</label>
+       <p className="text-xs text-gray-500 mb-3">Dipakai untuk cek ongkir dan pembuatan shipment Biteship.</p>
+       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div>
+         <span className="block text-xs text-gray-500 mb-1">Berat aktual (gram)</span>
+         <input
+          type="number"
+          min="1"
+          required
+          value={form.weight_grams}
+          onChange={e => setForm({ ...form, weight_grams: e.target.value })}
+          className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 transition-all"
+          placeholder="5000"
+         />
+        </div>
+        {[
+         ['length_cm', 'Panjang (cm)'],
+         ['width_cm', 'Lebar (cm)'],
+         ['height_cm', 'Tinggi (cm)'],
+        ].map(([key, label]) => (
+         <div key={key}>
+          <span className="block text-xs text-gray-500 mb-1">{label}</span>
+          <input
+           type="number"
+           min="1"
+           value={form[key]}
+           onChange={e => setForm({ ...form, [key]: e.target.value })}
+           className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 transition-all"
+           placeholder="Opsional"
+          />
+         </div>
+        ))}
+       </div>
+      </div>
+
+      {/* Preview harga diskon */}
+      {form.price && form.discount_percent > 0 && (
       <div className="bg-orange-50 border border-orange-100 rounded-lg px-4 py-3">
        <p className="text-xs text-orange-600 font-medium">
         Harga setelah diskon: <span className="text-base font-bold">
