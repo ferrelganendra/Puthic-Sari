@@ -15,13 +15,13 @@ export default function StoreMap() {
 
   return (
     <section id="store" className="bg-white py-10 md:py-12 lg:py-14">
-      <div className="mx-auto max-w-6xl px-5 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-[0.82fr_1.18fr] md:items-center lg:gap-10">
-          <div className="max-w-sm" data-reveal="fade-right">
+      <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-[0.95fr_1.25fr] md:items-center lg:gap-12">
+          <div className="max-w-md" data-reveal="fade-right">
             <span className="eyebrow text-primary-dark">Offline Store</span>
             <h2 className="mt-3 font-display text-[2rem] leading-[1.12] text-heading md:text-[2.45rem] lg:text-[2.75rem]">
               Mampir ke{' '}
-              <span className="italic text-primary">toko kami</span>
+              <span className="whitespace-nowrap italic text-primary">toko kami</span>
             </h2>
 
             <div className="mt-6 space-y-4 text-[0.95rem] leading-relaxed text-text-secondary">
@@ -53,7 +53,7 @@ export default function StoreMap() {
           </div>
 
           <div className="overflow-hidden rounded-[1.25rem] border border-border-soft bg-surface shadow-card" data-reveal="fade-left" style={{ '--reveal-delay': '120ms' }}>
-            <div className="relative h-[240px] md:h-[360px] lg:h-[400px] xl:h-[420px]">
+            <div className="relative h-[240px] md:h-[380px] lg:h-[430px] xl:h-[460px]">
               {iframeError ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-secondary text-center px-6">
                   <HiLocationMarker className="h-12 w-12 text-text-muted mb-3" />
