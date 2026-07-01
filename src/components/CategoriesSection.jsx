@@ -133,8 +133,7 @@ function BestSellerHero({ onClick }) {
       href="/collections/Best%20Seller"
       onClick={onClick}
       data-scroll-anchor="category-Best Seller"
-      className="group relative block rounded-2xl shadow-none transition-shadow duration-300 hover:shadow-soft-lg"
-      style={{ aspectRatio: '21 / 7' }}
+      className="group relative block h-[220px] rounded-2xl shadow-none transition-shadow duration-300 hover:shadow-soft-lg sm:h-auto sm:aspect-[21/7]"
     >
       <div className="absolute inset-0 overflow-hidden rounded-2xl bg-secondary/30">
         <picture>

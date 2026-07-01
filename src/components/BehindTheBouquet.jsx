@@ -20,7 +20,7 @@ export default function BehindTheBouquet() {
           <div className="rounded-xl overflow-hidden border border-border-soft bg-secondary">
             <video
               src={videoUrl('behind-the-bouquet.mp4')}
-              className="aspect-[9/16] w-full object-cover"
+              className="aspect-[9/16] max-h-[400px] w-full object-cover md:max-h-none"
               autoPlay
               muted
               loop

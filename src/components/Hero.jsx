@@ -193,7 +193,7 @@ export default function Hero() {
     >
       <div aria-live="polite" aria-atomic="true" className="sr-only">{announce}</div>
 
-      <div className="relative isolate w-full overflow-hidden rounded-[28px] bg-secondary transform-gpu" style={{ aspectRatio: '16/9' }}>
+      <div className="relative isolate w-full overflow-hidden rounded-2xl bg-secondary transform-gpu md:rounded-[28px]" style={{ aspectRatio: '16/9' }}>
         {activeSlides.map((slide, i) => (
           <a
             key={slide.src + i}
@@ -254,7 +254,7 @@ export default function Hero() {
 
                 {/* Text overlay */}
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full max-w-7xl mx-auto px-10 sm:px-8 lg:px-12">
+                  <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12">
                     <div className="max-w-lg">
                       {slide.eyebrow && (
                         <p className="text-[11px] sm:text-xs uppercase tracking-eyebrow font-semibold text-white/80 mb-1.5 sm:mb-2">

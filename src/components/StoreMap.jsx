@@ -14,17 +14,17 @@ export default function StoreMap() {
   const [iframeError, setIframeError] = useState(false)
 
   return (
-    <section id="store" className="bg-white py-10 md:py-14">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-[0.85fr_1.15fr] md:items-stretch">
-          <div data-reveal="fade-right">
+    <section id="store" className="bg-white py-10 md:py-12 lg:py-14">
+      <div className="mx-auto max-w-6xl px-5 sm:px-6 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-[0.82fr_1.18fr] md:items-center lg:gap-10">
+          <div className="max-w-sm" data-reveal="fade-right">
             <span className="eyebrow text-primary-dark">Offline Store</span>
-            <h2 className="mt-3 font-display text-3xl md:text-4xl text-heading leading-tight">
+            <h2 className="mt-3 font-display text-[2rem] leading-[1.12] text-heading md:text-[2.45rem] lg:text-[2.75rem]">
               Mampir ke{' '}
               <span className="italic text-primary">toko kami</span>
             </h2>
 
-            <div className="mt-7 space-y-5 text-sm leading-relaxed text-text-secondary">
+            <div className="mt-6 space-y-4 text-[0.95rem] leading-relaxed text-text-secondary">
               <div>
                 <p className="mb-1 text-xs font-semibold uppercase tracking-eyebrow text-heading">Alamat</p>
                 <p>Jl. Perumnas, Ngropoh, Condongcatur,<br />Kec. Depok, Sleman, DIY 55283</p>
@@ -45,15 +45,15 @@ export default function StoreMap() {
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 btn-primary text-sm"
+              className="mt-7 btn-primary text-sm"
             >
               <HiLocationMarker className="text-base" />
               Buka di Google Maps
             </a>
           </div>
 
-          <div className="rounded-[1.25rem] overflow-hidden border border-border-soft bg-surface shadow-card" data-reveal="fade-left" style={{ '--reveal-delay': '120ms' }}>
-            <div className="relative h-80 md:h-full md:min-h-[420px]">
+          <div className="overflow-hidden rounded-[1.25rem] border border-border-soft bg-surface shadow-card" data-reveal="fade-left" style={{ '--reveal-delay': '120ms' }}>
+            <div className="relative h-[240px] md:h-[360px] lg:h-[400px] xl:h-[420px]">
               {iframeError ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-secondary text-center px-6">
                   <HiLocationMarker className="h-12 w-12 text-text-muted mb-3" />
