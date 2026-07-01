@@ -126,7 +126,7 @@ async function request(path: string, init: RequestInit) {
 }
 
 export async function searchAreas(input: string) {
-  const query = input.trim()
+  const query = input.trim().slice(0, 120)
   if (query.length < 3) return []
 
   const data = await request(`/v1/maps/areas?countries=ID&type=single&input=${encodeURIComponent(query)}`, { method: 'GET' })

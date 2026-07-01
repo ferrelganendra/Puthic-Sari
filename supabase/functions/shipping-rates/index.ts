@@ -1,6 +1,7 @@
 import { biteshipItems, buildCheckoutItems } from '../_shared/checkout.ts'
 import { getRates } from '../_shared/biteship.ts'
 import { apiError, handleOptions, jsonResponse, normalizePostalCode, readJson } from '../_shared/http.ts'
+import { enforceRateLimit } from '../_shared/security.ts'
 
 function destination(body: Record<string, unknown>) {
   const postalCode = normalizePostalCode(body.destinationPostalCode)
@@ -17,6 +18,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return jsonResponse({ success: false, error: 'Method tidak diizinkan.' }, 405, req)
 
   try {
+    await enforceRateLimit(req, 'shipping-rates', 30)
     const body = await readJson(req)
     const { items, subtotal } = await buildCheckoutItems(body.cart || body.items || [])
     const rates = await getRates(destination(body), biteshipItems(items))

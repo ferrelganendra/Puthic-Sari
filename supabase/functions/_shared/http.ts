@@ -46,7 +46,12 @@ export function handleOptions(req: Request) {
   return new Response('ok', { headers: dynamicCorsHeaders(req) })
 }
 
+const MAX_JSON_BODY_BYTES = 64 * 1024
+
 export async function readJson(req: Request) {
+  const contentLength = Number(req.headers.get('content-length') || 0)
+  if (contentLength > MAX_JSON_BODY_BYTES) throw new Error('Request terlalu besar.')
+
   try {
     return await req.json()
   } catch (_error) {

@@ -13,6 +13,7 @@
 
 import { createSupabaseAdmin } from '../_shared/supabase.ts'
 import { handleOptions, jsonResponse, readJson, safeApiError } from '../_shared/http.ts'
+import { enforceRateLimit } from '../_shared/security.ts'
 
 Deno.serve(async (req) => {
   const options = handleOptions(req)
@@ -22,9 +23,10 @@ Deno.serve(async (req) => {
   const supabase = createSupabaseAdmin()
 
   try {
+    await enforceRateLimit(req, 'subscribe', 5, 600)
     const body = await readJson(req)
-    const email = String(body.email || '').trim().toLowerCase()
-    const source = String(body.source || 'footer').trim()
+    const email = String(body.email || '').trim().toLowerCase().slice(0, 254)
+    const source = String(body.source || 'footer').trim().slice(0, 40)
 
     // Validate email
     if (!email) {

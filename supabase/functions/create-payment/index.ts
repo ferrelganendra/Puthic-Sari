@@ -3,6 +3,7 @@ import { resolveSelectedRate } from '../_shared/biteship.ts'
 import { createSnapTransaction } from '../_shared/midtrans.ts'
 import { createSupabaseAdmin, getUser } from '../_shared/supabase.ts'
 import { handleOptions, jsonResponse, normalizePhone, normalizePostalCode, readJson, safeApiError } from '../_shared/http.ts'
+import { enforceRateLimit } from '../_shared/security.ts'
 
 Deno.serve(async (req) => {
   const options = handleOptions(req)
@@ -13,19 +14,20 @@ Deno.serve(async (req) => {
   let insertedOrderId: string | null = null
 
   try {
+    await enforceRateLimit(req, 'create-payment', 10)
     const body = await readJson(req)
     const user = await getUser(req)
-    const customerName = String(body.customerName || '').trim()
-    const customerPhone = normalizePhone(body.customerPhone)
-    const customerEmail = String(body.customerEmail || user?.email || '').trim() || null
-    const destinationAddress = String(body.destinationAddress || '').trim()
+    const customerName = String(body.customerName || '').trim().slice(0, 120)
+    const customerPhone = normalizePhone(body.customerPhone).slice(0, 24)
+    const customerEmail = String(body.customerEmail || user?.email || '').trim().slice(0, 254) || null
+    const destinationAddress = String(body.destinationAddress || '').trim().slice(0, 500)
     const destinationPostalCode = normalizePostalCode(body.destinationPostalCode)
-    const destinationAreaId = String(body.destinationAreaId || '').trim() || null
-    const destinationAreaName = String(body.destinationAreaName || '').trim() || null
+    const destinationAreaId = String(body.destinationAreaId || '').trim().slice(0, 80) || null
+    const destinationAreaName = String(body.destinationAreaName || '').trim().slice(0, 180) || null
     const destinationLatitude = Number(body.destinationLatitude || 0)
     const destinationLongitude = Number(body.destinationLongitude || 0)
-    const destinationNote = String(body.destinationNote || '').trim() || null
-    const note = String(body.orderNote || '').trim() || null
+    const destinationNote = String(body.destinationNote || '').trim().slice(0, 240) || null
+    const note = String(body.orderNote || '').trim().slice(0, 500) || null
 
     if (!customerName) throw new Error('Nama penerima wajib diisi.')
     if (!customerPhone) throw new Error('Nomor WhatsApp wajib diisi.')

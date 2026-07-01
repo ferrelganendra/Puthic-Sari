@@ -1,4 +1,4 @@
-import { createSupabaseAdmin } from '../_shared/supabase.ts'
+import { createSupabaseAdmin, requireAdminUser } from '../_shared/supabase.ts'
 import { createShipment } from '../_shared/biteship.ts'
 import { biteshipItemsFromOrderRows } from '../_shared/checkout.ts'
 import { getTransactionStatus, isFailedNotification, isPaidNotification } from '../_shared/midtrans.ts'
@@ -12,6 +12,7 @@ Deno.serve(async (req) => {
   const result = { checked: 0, expired: 0, paid: 0, failed: 0, skipped: 0, errors: [] as string[] }
 
   try {
+    await requireAdminUser(req)
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
     const { data: orders, error: fetchError } = await supabase

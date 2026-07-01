@@ -1,5 +1,5 @@
 import { schedulePickup } from '../_shared/biteship.ts'
-import { createSupabaseAdmin } from '../_shared/supabase.ts'
+import { createSupabaseAdmin, requireAdminUser } from '../_shared/supabase.ts'
 import { handleOptions, jsonResponse, readJson } from '../_shared/http.ts'
 
 Deno.serve(async (req) => {
@@ -8,6 +8,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return jsonResponse({ success: false, error: 'Method tidak diizinkan.' }, 200, req)
 
   try {
+    await requireAdminUser(req)
     const supabase = createSupabaseAdmin()
     const body = await readJson(req)
     const orderId = String(body.orderId || '').trim()

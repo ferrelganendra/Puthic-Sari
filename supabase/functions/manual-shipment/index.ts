@@ -1,6 +1,6 @@
 import { biteshipItemsFromOrderRows } from '../_shared/checkout.ts'
 import { createShipment, resolveSelectedRate, type BiteshipDestination } from '../_shared/biteship.ts'
-import { createSupabaseAdmin, getUser } from '../_shared/supabase.ts'
+import { createSupabaseAdmin, requireAdminUser } from '../_shared/supabase.ts'
 import { handleOptions, jsonResponse, readJson, safeApiError } from '../_shared/http.ts'
 
 Deno.serve(async (req) => {
@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return jsonResponse({ success: false, error: 'Method tidak diizinkan.' }, 405, req)
 
   try {
-    // Admin function — auth handled by Supabase RLS + admin check in frontend
+    await requireAdminUser(req)
     const supabase = createSupabaseAdmin()
     const body = await readJson(req)
     const orderId = String(body.orderId || '').trim()
