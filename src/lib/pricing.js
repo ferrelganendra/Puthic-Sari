@@ -1,7 +1,3 @@
-/**
- * Hitung harga final setelah diskon.
- * Sumber kebenaran tunggal untuk perhitungan harga di seluruh app.
- */
 export function getFinalPrice(product) {
  if (!product) return 0
  const discount = Math.min(100, Math.max(0, Number(product.discount_percent || 0)))

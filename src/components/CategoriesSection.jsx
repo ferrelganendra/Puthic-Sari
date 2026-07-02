@@ -1,10 +1,3 @@
-/**
- * CategoriesSection — Editorial photo-grid with dynamic product images.
- * - Best Seller: full-width hero strip above the grid
- * - 8 categories: 4-col photo grid (lg), 3-col (sm), 2-col (mobile)
- * - Photos pulled dynamically from first product in each category
- * - Hover: image scale, overlay lighten, arrow indicator
- */
 
 import { useMemo } from 'react'
 import { productImageUrl } from '../lib/assetUrl'
@@ -17,10 +10,9 @@ const CATEGORIES = [
   { name: 'Anniversary',    slug: 'Anniversary',        subtitle: 'Ekspresikan cinta' },
   { name: 'Giftbox',        slug: 'Giftbox',            subtitle: 'Hadiah dalam kotak' },
   { name: 'Untuk Pria',     slug: 'Pria',               subtitle: 'Maskulin & elegan' },
-  { name: 'Untuk Wanita',   slug: 'Wanita',             subtitle: 'Lembut & memukau' },
+  { name: 'Untuk Wanita',   slug: 'Wanita',             subtitle: 'Lembut dan manis' },
 ]
 
-/** Map category slug → product filtering logic (mirrors CollectionPage) */
 function getCategoryProducts(products, slug) {
   switch (slug) {
     case 'Best Seller':
@@ -40,7 +32,6 @@ function getCategoryProducts(products, slug) {
     case 'Grand Opening':
       return products.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(6))
     default:
-      // Category-based: match by exact name OR substring (handles "Artificial" ↔ "Artificial Flowers")
       return products.filter(p => {
         if (!p.category) return false
         const cat = p.category.toLowerCase()
@@ -50,7 +41,6 @@ function getCategoryProducts(products, slug) {
   }
 }
 
-/** Get the first product image for a category, or null */
 function getCategoryImage(products, slug) {
   const filtered = getCategoryProducts(products, slug)
   const first = filtered.find(p => p.images?.length > 0)
@@ -66,7 +56,6 @@ function CategoryCard({ name, subtitle, slug, image, onClick }) {
       className="group relative block rounded-2xl shadow-none transition-shadow duration-300 hover:shadow-soft-lg"
       style={{ aspectRatio: '3 / 4' }}
     >
-      {/* Inner clipping layer stays untransformed so rounded corners don't flicker on hover */}
       <div className="absolute inset-0 overflow-hidden rounded-2xl bg-secondary/30">
         {image ? (
           <img
@@ -79,7 +68,6 @@ function CategoryCard({ name, subtitle, slug, image, onClick }) {
           />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-secondary via-secondary/60 to-primary-soft/30 p-4 text-center">
-            {/* Decorative leaf strokes */}
             <svg
               className="absolute -bottom-4 -right-4 h-24 w-24 text-primary-soft/40"
               viewBox="0 0 100 100"
@@ -103,11 +91,9 @@ function CategoryCard({ name, subtitle, slug, image, onClick }) {
           </div>
         )}
 
-        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-300 group-hover:opacity-90" />
       </div>
 
-      {/* Content pinned to bottom */}
       <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-4">
         <h3 className="font-display text-sm sm:text-base font-semibold text-white leading-tight">
           {name}
@@ -117,7 +103,6 @@ function CategoryCard({ name, subtitle, slug, image, onClick }) {
         </p>
       </div>
 
-      {/* Arrow indicator (revealed on hover) */}
       <div className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/0 text-white opacity-0 transition-all duration-300 group-hover:bg-white/95 group-hover:text-primary-dark group-hover:opacity-100">
         <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -150,7 +135,6 @@ function BestSellerHero({ onClick }) {
 
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
 
-        {/* Badge */}
         <span className="absolute top-4 left-4 sm:top-5 sm:left-5 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-eyebrow text-primary-dark backdrop-blur-sm">
         <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2 L14.5 8.5 L21.5 9.5 L16.5 14 L18 21 L12 17.5 L6 21 L7.5 14 L2.5 9.5 L9.5 8.5 Z" />
@@ -180,7 +164,6 @@ function BestSellerHero({ onClick }) {
 }
 
 export default function CategoriesSection({ products = [], onCategorySelect, onCollectionNavigate }) {
-  /** Build a map: slug → first product image */
   const slugImageMap = useMemo(() => {
     if (!Array.isArray(products) || products.length === 0) return {}
     const map = {}
@@ -199,7 +182,6 @@ export default function CategoriesSection({ products = [], onCategorySelect, onC
   return (
     <section className="py-8 md:py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section header */}
         <div className="mb-5 md:mb-7 flex items-end justify-between gap-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-eyebrow text-primary-dark">
@@ -221,12 +203,10 @@ export default function CategoriesSection({ products = [], onCategorySelect, onC
           </a>
         </div>
 
-        {/* Best Seller hero strip */}
         <div className="mb-3">
           <BestSellerHero onClick={(e) => handleClick(e, 'Best Seller')} />
         </div>
 
-        {/* Category grid: 4 cols lg, 3 cols sm, 2 cols mobile */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {CATEGORIES.map((cat) => (
             <CategoryCard
@@ -240,7 +220,6 @@ export default function CategoriesSection({ products = [], onCategorySelect, onC
           ))}
         </div>
 
-        {/* Mobile-only "all collections" link */}
         <div className="mt-5 sm:hidden text-center">
           <a
             href="/collections"

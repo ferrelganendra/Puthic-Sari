@@ -55,7 +55,6 @@
 }
 
 @layer components {
-  /* === Primary CTA — warm rose pill, soft premium feel === */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-7 py-3.5 font-medium text-sm transition-all duration-200 min-h-11;
     background-color: var(--color-primary);
@@ -77,7 +76,6 @@
     transform: none;
   }
 
-  /* === Secondary CTA — soft outline === */
   .btn-outline {
     @apply inline-flex items-center justify-center gap-2 px-7 py-3.5 font-medium text-sm transition-all duration-200 min-h-11;
     color: var(--color-text-primary);
@@ -91,7 +89,6 @@
     color: #fff;
   }
 
-  /* === Ghost/tertiary — text-only with arrow === */
   .btn-ghost {
     @apply inline-flex items-center gap-1.5 font-medium text-sm transition-colors duration-200 min-h-11;
     color: var(--color-text-primary);
@@ -101,7 +98,6 @@
     color: var(--color-primary);
   }
 
-  /* === Premium badges — pill-shaped, soft colors === */
   .badge {
     @apply inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase;
     border-radius: var(--badge-radius);
@@ -143,21 +139,18 @@
     letter-spacing: 0.08em;
   }
 
-  /* === Eyebrow text — small caps style === */
   .eyebrow {
     @apply text-xs font-medium uppercase;
     color: var(--color-primary-dark);
     letter-spacing: var(--button-letter-spacing);
   }
 
-  /* === Premium card image container === */
   .card-image {
     border-radius: var(--card-radius);
     overflow: hidden;
     background: var(--color-secondary);
   }
 
-  /* === Section container with editorial spacing === */
   .section {
     @apply py-12 md:py-20 lg:py-24;
   }

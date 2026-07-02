@@ -1,8 +1,3 @@
-/**
- * TrustStrip — Trust signals.
- * Shows: 3 trust copy lines (Pembayaran Aman, Pengiriman Cepat, Bantuan WhatsApp).
- */
-
 export default function TrustStrip() {
   const items = [
     {

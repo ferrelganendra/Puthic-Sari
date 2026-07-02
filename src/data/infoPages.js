@@ -20,20 +20,20 @@ export const infoPages = {
   quote: 'Setiap bunga memiliki makna, dan tugas kami adalah membantu menyampaikan perasaan itu dengan cara yang paling indah.',
   quoteBy: 'Sisi',
   sections: [
-   {
-    title: 'Research & Design Philosophy',
-    body: 'Di tengah berkembangnya industri florist modern, kami percaya bahwa customer tidak hanya mencari bunga yang cantik, tetapi juga pengalaman yang personal, berkesan, dan berkualitas. Karena itu, Puthic Sari hadir dengan pendekatan yang mengutamakan detail, estetika, dan ketulusan dalam setiap proses pengerjaan. Kami terus mengembangkan desain yang elegan, modern, dan timeless agar setiap rangkaian dapat cocok untuk berbagai momen spesial. Inspirasi kami datang dari warna-warna alam, tren florist modern, serta karakter unik dari setiap pelanggan yang mempercayakan momennya kepada kami. Sebelum sebuah rangkaian dibuat, kami memulai semuanya dari proses observasi dan eksplorasi ide. Kami memilih bunga dengan standar kualitas tertentu agar setiap rangkaian tetap proporsional, dan memiliki tampilan premium ketika sampai ke tangan customer.',
-   },
+    {
+     title: 'Riset dan Desain',
+     body: 'Puthic Sari merangkai bunga dengan menyesuaikan warna, bentuk, dan momen pelanggan. Setiap rangkaian dimulai dari pemilihan bunga, komposisi, lalu penyesuaian detail agar hasilnya rapi dan enak dilihat. Inspirasi desain datang dari koleksi toko, permintaan pelanggan, dan karakter acara yang ingin dirayakan.',
+    },
    {
     title: 'Production',
-    body: 'Setiap produk Puthic Sari dibuat secara handmade oleh tim florist kami. Kami percaya bunga bukan produk pabrik yang bisa dibuat tanpa rasa. Karena itu, setiap rangkaian dirakit satu per satu dengan komposisi yang dipikirkan secara matang — mulai dari arah bunga, keseimbangan warna, volume, hingga finishing wrapping. Dalam proses pengerjaan, kami juga melakukan quality checking. Kami ingin setiap customer menerima bunga yang terlihat sama indahnya seperti ketika pertama kali dibayangkan.',
+     body: 'Setiap produk Puthic Sari dibuat satu per satu oleh tim florist kami. Komposisi bunga, warna, volume, dan wrapping dicek sebelum pesanan dikirim agar hasilnya tetap rapi saat diterima pelanggan.',
    },
    {
     title: 'Packaging and Delivery',
-    body: 'Setiap bouquet dikemas dengan perlindungan tambahan agar tetap aman selama perjalanan. Untuk produk tertentu, kami juga menyesuaikan metode pengiriman supaya bunga tetap tampil maksimal saat diterima. Kami selalu berusaha memastikan bahwa rasa bahagia yang ingin dikirim pelanggan bisa sampai dengan utuh — bukan hanya bunganya, tetapi juga kesannya.',
+     body: 'Setiap buket dikemas agar lebih aman selama perjalanan. Untuk produk tertentu, metode pengiriman disesuaikan supaya bentuk bunga tetap terjaga saat sampai.',
    },
   ],
-  highlights: ['Handmade', 'Quality Checking', 'Premium Packaging'],
+   highlights: ['Handmade', 'Dicek sebelum kirim', 'Dikemas rapi'],
   gallery: [
    { src: siteAssetUrl('/footer/florist-table-vertical.jfif'), alt: 'Peralatan dan bunga untuk proses wrapping' },
    { src: siteAssetUrl('/footer/bouquet-box.jpeg'), alt: 'Buket Puthic Sari dalam kotak hadiah' },
@@ -43,7 +43,7 @@ export const infoPages = {
   label: 'Tentang Kami',
   eyebrow: 'Puthic Sari',
   title: 'Florist dengan Sentuhan Personal.',
-  intro: 'Puthic Sari adalah brand florist yang menghadirkan rangkaian bunga dengan sentuhan elegan, hangat, dan personal. Kami memadukan seni merangkai bunga dengan detail visual modern agar setiap produk tidak hanya terlihat cantik, tetapi juga memiliki karakter dan emosi di dalamnya.',
+   intro: 'Puthic Sari adalah florist di Yogyakarta yang membuat rangkaian bunga untuk hadiah, wisuda, ulang tahun, anniversary, dan momen spesial lainnya. Setiap buket dibuat dengan perhatian pada warna, bentuk, dan detail wrapping.',
    heroImage: siteAssetUrl('/footer/logo-puthic-sari.jpeg'),
    heroAlt: 'Logo Puthic Sari',
   quote: null,
@@ -66,7 +66,7 @@ export const infoPages = {
     body: 'Kepercayaan pelanggan adalah alasan terbesar Puthic Sari terus berkembang. Setiap repeat order, setiap pesan manis dari pelanggan, dan setiap cerita bahagia yang dibagikan kembali menjadi bagian penting dari perjalanan kami. Terima kasih sudah mempercayakan momen spesial Anda kepada Puthic Sari 🌷',
    },
   ],
-  highlights: ['Elegan', 'Hangat', 'Personal'],
+   highlights: ['Rapi', 'Hangat', 'Personal'],
   gallery: [
    { src: siteAssetUrl('/footer/bouquet-box.jpeg'), alt: 'Buket warna pink dalam gift box' },
    { src: siteAssetUrl('/footer/florist-table-wide.jfif'), alt: 'Detail proses florist' },

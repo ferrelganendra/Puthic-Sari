@@ -39,13 +39,11 @@ export default function CollectionPage({ products, categories, onViewDetail, ini
   const filteredProducts = useMemo(() => {
     let result = [...products]
 
-    // Special occasion-based filters
     if (selectedCategory === 'Best Seller') {
       result = result.filter(p => p.is_best_seller)
     } else if (selectedCategory === 'New Arrivals') {
       result = result.filter(p => p.is_new_arrival)
     } else if (selectedCategory === 'Wisuda') {
-      // Filter by occasion_id = 1 (Wisuda) via product_occasions
       result = result.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(1))
     } else if (selectedCategory === 'Ulang Tahun') {
       result = result.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(2))
@@ -58,11 +56,9 @@ export default function CollectionPage({ products, categories, onViewDetail, ini
     } else if (selectedCategory === 'Grand Opening') {
       result = result.filter(p => Array.isArray(p.occasionIds) && p.occasionIds.includes(6))
     } else if (selectedCategory) {
-      // Product type / recipient filter (Artificial Flowers, Fresh Flowers, Giftbox, Pria, Wanita)
       result = result.filter(p => p.category === selectedCategory)
     }
 
-    // Filter by price range
     if (selectedPrice !== 'all') {
       if (selectedPrice.endsWith('+')) {
         const minVal = parseInt(selectedPrice)
@@ -76,7 +72,6 @@ export default function CollectionPage({ products, categories, onViewDetail, ini
       }
     }
 
-    // Sort
     switch (sortBy) {
       case 'price_asc':
         result.sort((a, b) => getFinalPrice(a) - getFinalPrice(b))
