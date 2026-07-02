@@ -3,14 +3,6 @@ import { HiHeart, HiSparkles, HiOutlineStar } from 'react-icons/hi'
 import { useWishlist } from '../context/WishlistContext'
 import { productImageUrl } from '../lib/assetUrl'
 
-/**
- * ProductCard — Premium Puthic Sari product card.
- * - Soft rounded corners, subtle shadow
- * - Pill-shaped badges (Bestseller, New, Custom, Sale, Sold Out)
- * - Wishlist heart top-right
- * - Hover: image zoom + soft shadow lift
- * - Clear price hierarchy
- */
 
 const PRICE_FORMAT = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })
 
@@ -25,12 +17,10 @@ function ProductCard({ product, onViewDetail, priority = false }) {
   const finalPrice = hasDiscount ? Math.round(product.price * (1 - discount / 100)) : product.price
   const isSoldOut = product.is_sold_out ?? product.isSoldOut ?? false
   const images = product.images?.length ? product.images : [product.image].filter(Boolean)
-  // Prefer first full-size image (higher resolution) over thumbnail for crisp display
   const displayImg = productImageUrl(images[0] || product.thumbnail || product.image)
   const wishlisted = isWishlisted(product.id)
   const pricePrefix = product.price_from ? 'Mulai ' : ''
 
-  // Determine badge
   const badge = (product.badge || '').toLowerCase()
   const showBestseller = product.is_best_seller && !badge.includes('best seller') && !badge.includes('best')
   const showNew = product.is_new_arrival && !showBestseller
@@ -50,16 +40,13 @@ function ProductCard({ product, onViewDetail, priority = false }) {
 
   return (
     <article className="group flex flex-col" data-scroll-anchor={`product-${product.id}`}>
-      {/* Image container */}
       <div
         className="relative aspect-[4/5] rounded-[14px] overflow-hidden bg-secondary cursor-pointer"
         onClick={(event) => onViewDetail(product, event)}
       >
-        {/* Skeleton shimmer */}
         {!imgLoaded && (
           <div className="absolute inset-0 bg-gradient-to-br from-secondary via-secondary-deep/40 to-secondary animate-pulse" />
         )}
-        {/* Image */}
         <img
           src={displayImg}
           alt={product.name}
@@ -72,10 +59,8 @@ function ProductCard({ product, onViewDetail, priority = false }) {
           }`}
         />
 
-        {/* Gradient overlay for visual depth */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/8 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-        {/* Badge — top-left, single pill */}
         <div className="absolute top-3 left-3">
           {isSoldOut ? (
             <span className="badge-soldout">Sold Out</span>
@@ -96,7 +81,6 @@ function ProductCard({ product, onViewDetail, priority = false }) {
           ) : null}
         </div>
 
-        {/* Wishlist heart — top-right */}
         <button
           onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id) }}
           className="absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/85 backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-soft"
@@ -105,7 +89,6 @@ function ProductCard({ product, onViewDetail, priority = false }) {
           <HiHeart className={`text-base transition-colors ${wishlisted ? 'text-[#C85C5C] fill-[#C85C5C]' : 'text-text-muted'}`} />
         </button>
 
-        {/* Quick view overlay on hover */}
         {!isSoldOut && (
           <div
             className="absolute inset-x-0 bottom-0 p-3 pt-8 bg-gradient-to-t from-black/50 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 cursor-pointer"
@@ -118,9 +101,7 @@ function ProductCard({ product, onViewDetail, priority = false }) {
         )}
       </div>
 
-      {/* Product info */}
       <div className="mt-3 md:mt-4 flex flex-col gap-1 px-0.5">
-        {/* Name */}
         <h3
           onClick={(event) => onViewDetail(product, event)}
           className="text-sm md:text-[15px] font-medium text-heading leading-snug line-clamp-2 cursor-pointer hover:text-primary transition-colors"
@@ -128,12 +109,10 @@ function ProductCard({ product, onViewDetail, priority = false }) {
           {product.name}
         </h3>
 
-        {/* Category / occasion tag */}
         {product.category && (
           <p className="text-xs font-medium text-text-secondary">{product.category}</p>
         )}
 
-        {/* Price */}
         <p className="flex items-baseline gap-2 mt-0.5">
           <span className="text-sm md:text-base font-semibold text-heading">
             {pricePrefix}{formatPrice(finalPrice)}
