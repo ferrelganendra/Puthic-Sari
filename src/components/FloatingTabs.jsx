@@ -5,13 +5,6 @@ import { useWishlist } from '../context/WishlistContext'
 import { supabase } from '../lib/supabase'
 import { fetchApprovedReviews, getReviewStats } from '../lib/reviews'
 
-/**
- * FloatingTabs — Always-visible side tabs (ZM-style)
- * - Left: Reviews panel (view existing + write a new review)
- * - Right: Wishlist panel (saved products)
- * - Tab collapses to icon strip on desktop
- * - Hidden on mobile (use mobile bottom bar instead)
- */
 const WHATSAPP_PHONE = '6285117606161'
 const WHATSAPP_MSG = encodeURIComponent('Halo Puthic Sari, saya ingin bertanya tentang produk Anda.')
 
@@ -130,7 +123,7 @@ function ReviewsPanel({ onClose }) {
   const [reviews, setReviews] = useState([])
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [mode, setMode] = useState('list') // 'list' | 'write'
+  const [mode, setMode] = useState('list')
 
   const fetchReviews = async () => {
     try {
@@ -292,13 +285,11 @@ function SidePanel({ open, side, children, onClose }) {
   if (!open) return null
   return (
     <div className="fixed inset-0 z-[60] flex">
-      {/* Backdrop */}
       <button
         onClick={onClose}
         className="flex-1 bg-black/30 transition-opacity"
         aria-label="Tutup panel"
       />
-      {/* Panel */}
       <div
         className={`w-[360px] max-w-[90vw] bg-white shadow-2xl flex flex-col ${side === 'right' ? '' : 'order-first'}`}
         role="dialog"
@@ -311,11 +302,10 @@ function SidePanel({ open, side, children, onClose }) {
 }
 
 export default function FloatingTabs({ onViewProduct, products = [] }) {
-  const [openSide, setOpenSide] = useState(null) // 'left' | 'right' | null
+  const [openSide, setOpenSide] = useState(null)
 
   return (
     <>
-      {/* Left tab — Reviews (hidden on mobile, shown md+) */}
       <button
         onClick={() => setOpenSide('left')}
         className="fixed left-0 top-1/2 z-40 hidden -translate-y-1/2 md:flex flex-col items-center gap-1.5 bg-white border border-border-soft border-l-0 px-3 py-4 rounded-r-xl shadow-md transition-all hover:border-primary hover:pr-4 group"
@@ -324,7 +314,6 @@ export default function FloatingTabs({ onViewProduct, products = [] }) {
         <HiStar className="h-5 w-5 text-amber-400 group-hover:text-amber-500" fill="currentColor" />
       </button>
 
-      {/* Right tab — Wishlist (hidden on mobile, shown md+) */}
       <button
         onClick={() => setOpenSide('right')}
         className="fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 md:flex flex-col items-center gap-1.5 bg-white border border-border-soft border-r-0 px-3 py-4 rounded-l-xl shadow-md transition-all hover:border-primary hover:pl-4 group"
@@ -333,7 +322,6 @@ export default function FloatingTabs({ onViewProduct, products = [] }) {
         <HiHeart className="h-5 w-5 text-primary group-hover:fill-primary" />
       </button>
 
-      {/* Floating WhatsApp — keep existing */}
       <a
         href={`https://wa.me/${WHATSAPP_PHONE}?text=${WHATSAPP_MSG}`}
         target="_blank"
@@ -344,12 +332,10 @@ export default function FloatingTabs({ onViewProduct, products = [] }) {
         <FaWhatsapp className="h-7 w-7" />
       </a>
 
-      {/* Reviews panel */}
       <SidePanel open={openSide === 'left'} side="left" onClose={() => setOpenSide(null)}>
         <ReviewsPanel onClose={() => setOpenSide(null)} />
       </SidePanel>
 
-      {/* Wishlist panel */}
       <SidePanel open={openSide === 'right'} side="right" onClose={() => setOpenSide(null)}>
         <WishlistPanel onClose={() => setOpenSide(null)} onViewProduct={onViewProduct} products={products} />
       </SidePanel>

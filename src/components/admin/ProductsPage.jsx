@@ -28,7 +28,7 @@ export default function ProductsPage({ onProductsChanged }) {
  const [editProduct, setEditProduct] = useState(null)
  const [flagColumnMissing, setFlagColumnMissing] = useState(false)
  const [pageError, setPageError] = useState('')
- const [confirmDelete, setConfirmDelete] = useState(null) // {id, name}
+ const [confirmDelete, setConfirmDelete] = useState(null)
 
  useEffect(() => {
   fetchProducts()
@@ -128,7 +128,7 @@ export default function ProductsPage({ onProductsChanged }) {
 
  return (
   <div>
-   {/* Header actions */}
+
    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
     <div className="relative w-full sm:w-72">
      <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -149,7 +149,7 @@ export default function ProductsPage({ onProductsChanged }) {
     </button>
    </div>
 
-   {/* Stats */}
+
    {(flagColumnMissing || pageError) && (
     <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
      <p className="text-sm font-medium text-amber-800">
@@ -158,7 +158,7 @@ export default function ProductsPage({ onProductsChanged }) {
     </div>
    )}
 
-   {/* Stats */}
+
    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
     <div className="bg-white rounded-lg border border-gray-200 p-4">
      <p className="text-2xl font-bold text-gray-900">{products.length}</p>
@@ -178,7 +178,7 @@ export default function ProductsPage({ onProductsChanged }) {
     </div>
    </div>
 
-   {/* Product table */}
+
    {loading ? (
     <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
      <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full mx-auto"></div>
@@ -323,7 +323,7 @@ export default function ProductsPage({ onProductsChanged }) {
     </div>
    )}
 
-   {/* Product Form Modal */}
+
    {showForm && (
     <ProductForm
      product={editProduct}
@@ -333,7 +333,7 @@ export default function ProductsPage({ onProductsChanged }) {
     />
    )}
 
-    {/* Confirm Delete Modal */}
+
    {confirmDelete && (
     <ConfirmDialog
      message={`Hapus produk "${confirmDelete.name}"? Tindakan ini tidak bisa dibatalkan.`}

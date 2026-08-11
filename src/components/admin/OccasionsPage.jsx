@@ -14,7 +14,6 @@ export default function OccasionsPage() {
  const [error, setError] = useState('')
  const [confirmDelete, setConfirmDelete] = useState(null)
 
- // Product picker state
  const [allProducts, setAllProducts] = useState([])
  const [selectedProducts, setSelectedProducts] = useState([])
  const [productSearch, setProductSearch] = useState('')
@@ -104,7 +103,6 @@ export default function OccasionsPage() {
     return
    }
 
-  // Sync product_occasions for this occasion
   if (occasionId) {
    await supabase.from('product_occasions').delete().eq('occasion_id', occasionId)
    if (selectedProducts.length > 0) {
@@ -222,7 +220,7 @@ export default function OccasionsPage() {
         />
        </div>
 
-       {/* Product picker */}
+
        <div>
         <div className="flex items-center justify-between mb-1.5">
          <label className="block text-sm font-medium text-gray-700">Produk untuk Acara Ini</label>

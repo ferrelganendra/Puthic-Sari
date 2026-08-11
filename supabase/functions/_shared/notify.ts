@@ -1,15 +1,3 @@
-/**
- * notify.ts — Admin WhatsApp notification via Fonnte API.
- *
- * Fonnte (fonnte.com) is an Indonesian WA API service.
- * No monthly fee; pay-per-message (~IDR 300–500 per notification).
- *
- * Environment variables:
- *   FONNTE_TOKEN          — API token from fonnte.com dashboard
- *   FONNTE_TARGET_NUMBER  — Admin's WhatsApp number (e.g. 6285117606161)
- *
- * If either env var is missing, the function silently skips (no crash).
- */
 
 const FONNTE_BASE_URL = 'https://api.fonnte.com/send'
 const NOTIFICATION_TIMEOUT_MS = 5000

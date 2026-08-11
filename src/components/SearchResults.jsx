@@ -10,7 +10,6 @@ export default function SearchResults({ products, onViewDetail, onSearch, onHome
   const inputRef = useRef(null)
   const suggestionsRef = useRef(null)
 
-  // Generate suggestions based on query
   useEffect(() => {
     if (query.length < 2) {
       setSuggestions([])
@@ -37,7 +36,6 @@ export default function SearchResults({ products, onViewDetail, onSearch, onHome
     setSelectedSuggestion(-1)
   }, [query, products])
 
-  // Filter products for results
   const results = useMemo(() => {
     if (query.length < 2) return []
     const lowerQuery = query.toLowerCase()
@@ -48,7 +46,6 @@ export default function SearchResults({ products, onViewDetail, onSearch, onHome
     )
   }, [query, products])
 
-  // Handle keyboard navigation in suggestions
   const handleKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
@@ -71,7 +68,6 @@ export default function SearchResults({ products, onViewDetail, onSearch, onHome
     }
   }
 
-  // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (suggestionsRef.current && !suggestionsRef.current.contains(e.target)) {
@@ -82,7 +78,6 @@ export default function SearchResults({ products, onViewDetail, onSearch, onHome
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Focus input on mount
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
@@ -91,7 +86,6 @@ export default function SearchResults({ products, onViewDetail, onSearch, onHome
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Search Header */}
       <div className="border-b border-gray-100 bg-white sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
@@ -127,7 +121,6 @@ export default function SearchResults({ products, onViewDetail, onSearch, onHome
               )}
             </div>
 
-            {/* Instant Search Suggestions */}
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 shadow-lg z-50 max-h-80 overflow-y-auto">
                 {suggestions.map((suggestion, index) => (
@@ -164,7 +157,6 @@ export default function SearchResults({ products, onViewDetail, onSearch, onHome
         </div>
       </div>
 
-      {/* Search Results */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {query.length < 2 ? (
           <div className="text-center py-16">

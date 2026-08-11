@@ -1,10 +1,6 @@
 import { Component } from 'react'
 import { explainError } from '../lib/errorMessages'
 
-/**
- * Error Boundary — menangkap crash pada komponen anak
- * dan menampilkan fallback UI yang informatif.
- */
 export default class ErrorBoundary extends Component {
  constructor(props) {
   super(props)

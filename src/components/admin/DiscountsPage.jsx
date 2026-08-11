@@ -38,7 +38,7 @@ export default function DiscountsPage() {
 
  return (
   <div>
-   {/* Header */}
+
    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
     <p className="text-sm text-gray-500">Atur diskon persentase untuk setiap produk.</p>
     <div className="relative w-full sm:w-72">
@@ -53,7 +53,7 @@ export default function DiscountsPage() {
     </div>
    </div>
 
-   {/* Stats */}
+
    <div className="grid grid-cols-2 gap-3 mb-6">
     <div className="bg-white rounded-lg border border-gray-200 p-4">
      <p className="text-2xl font-bold text-orange-500">{discountedCount}</p>
@@ -65,7 +65,7 @@ export default function DiscountsPage() {
     </div>
    </div>
 
-   {/* Product list */}
+
    {loading ? (
     <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
      <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full mx-auto"></div>

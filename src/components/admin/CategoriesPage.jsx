@@ -72,8 +72,7 @@ export default function CategoriesPage() {
 
  return (
   <div>
-   {/* Header */}
-   <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6">
     <div>
      <p className="text-sm text-gray-500">Kelola kategori produk untuk mengorganisir katalog toko.</p>
     </div>
@@ -86,8 +85,7 @@ export default function CategoriesPage() {
     </button>
    </div>
 
-   {/* Categories grid */}
-   {loading ? (
+      {loading ? (
     <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
      <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full mx-auto"></div>
      <p className="text-sm text-gray-400 mt-3">Memuat kategori...</p>
@@ -139,8 +137,7 @@ export default function CategoriesPage() {
     onCancel={() => setConfirmDelete(null)}
    />
 
-   {/* Form Modal */}
-   {showForm && (
+      {showForm && (
     <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
      <div className="bg-white w-full max-w-md rounded-xl shadow-xl" onClick={e => e.stopPropagation()}>
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">

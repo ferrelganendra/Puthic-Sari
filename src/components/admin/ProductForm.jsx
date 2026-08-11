@@ -77,7 +77,6 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
  const MAX_FILE_SIZE_MB = 5
 
  const uploadImages = async (files) => {
-  // Validasi ukuran dan tipe file
   const invalidFiles = files.filter(f => {
    const sizeMb = f.size / 1024 / 1024
    return sizeMb > MAX_FILE_SIZE_MB || !f.type.startsWith('image/')
@@ -211,9 +210,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
    setError(productFlagsMigrationMessage)
   }
 
-  // Sync product_occasions
   if (productId) {
-   // Remove existing links, then insert selected ones
    await supabase.from('product_occasions').delete().eq('product_id', productId)
    if (selectedOccasions.length > 0) {
     const rows = selectedOccasions.map(occasion_id => ({ product_id: productId, occasion_id }))
@@ -229,7 +226,6 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
  return (
   <div className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center p-4 py-8">
    <div className="bg-white w-full max-w-2xl rounded-xl shadow-xl my-auto max-h-full overflow-y-auto" onClick={e => e.stopPropagation()}>
-    {/* Header */}
     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
      <h3 className="text-lg font-semibold text-gray-900">
       {product?.id ? 'Edit Produk' : 'Tambah Produk Baru'}
@@ -239,9 +235,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
      </button>
     </div>
 
-    {/* Form */}
     <form onSubmit={handleSubmit} className="p-6 space-y-5">
-     {/* Nama */}
      <div>
       <label className="block text-sm font-medium text-gray-700 mb-1.5">Nama Produk</label>
       <input
@@ -254,7 +248,6 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
       />
      </div>
 
-     {/* Deskripsi */}
      <div>
       <label className="block text-sm font-medium text-gray-700 mb-1.5">Deskripsi</label>
       <textarea
@@ -266,7 +259,6 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
       />
      </div>
 
-     {/* Harga + Jenis Produk + Diskon */}
      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div>
        <label className="block text-sm font-medium text-gray-700 mb-1.5">Harga (Rp)</label>
@@ -306,8 +298,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
       </div>
      </div>
 
-      {/* Berat Pengiriman */}
-      <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-4">
+       <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-4">
        <label className="block text-sm font-medium text-gray-700 mb-1.5">Berat Kirim</label>
        <p className="text-xs text-gray-500 mb-3">Dipakai untuk cek ongkir dan pembuatan shipment Biteship.</p>
        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -343,8 +334,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
        </div>
       </div>
 
-      {/* Preview harga diskon */}
-      {form.price && form.discount_percent > 0 && (
+       {form.price && form.discount_percent > 0 && (
       <div className="bg-orange-50 border border-orange-100 rounded-lg px-4 py-3">
        <p className="text-xs text-orange-600 font-medium">
         Harga setelah diskon: <span className="text-base font-bold">
@@ -354,7 +344,6 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
       </div>
      )}
 
-     {/* Momen / Occasions */}
      <div>
       <label className="block text-sm font-medium text-gray-700 mb-1.5">Cocok untuk Momen</label>
       <p className="text-xs text-gray-400 mb-2">Pilih satu atau lebih momen yang sesuai dengan buket ini.</p>
@@ -382,7 +371,6 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
       </div>
      </div>
 
-     {/* Upload Foto */}
       <div>
        <label className="block text-sm font-medium text-gray-700 mb-1.5">Foto Produk</label>
        <div
@@ -412,8 +400,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
         )}
        </div>
 
-      {/* Image previews */}
-      {form.images.length > 0 && (
+       {form.images.length > 0 && (
        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mt-3">
         {form.images.map((url, i) => (
          <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200">
@@ -436,7 +423,6 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
       )}
      </div>
 
-     {/* Status */}
      {flagColumnMissing && (
       <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
        <p className="text-sm font-medium text-amber-800">{productFlagsMigrationMessage}</p>
@@ -495,14 +481,12 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
       </label>
      </div>
 
-     {/* Error */}
      {error && (
       <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3">
        <p className="text-sm text-red-600">{error}</p>
       </div>
      )}
 
-     {/* Actions */}
      <div className="flex gap-3 pt-2">
       <button
        type="button"

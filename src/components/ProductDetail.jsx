@@ -8,16 +8,6 @@ import ProductCard from './ProductCard'
 import { supabase } from '../lib/supabase'
 import { fetchApprovedReviews, getReviewStats } from '../lib/reviews'
 
-/**
- * ProductDetailPage — full-page product detail (ZaskiaMecca-style).
- * - URL: /products/{slug}
- * - 2-col grid: gallery left, info right (info sticky on scroll)
- * - Tabs: Deskripsi | Info Pengiriman
- * - Breadcrumbs
- * - Sticky bottom add-to-cart bar (mobile only)
- * - Trust micro-badges
- * - Related products carousel below
- */
 function Breadcrumbs({ product, onHome, onCollectionNavigate }) {
   return (
     <nav className="text-xs text-gray-500 mb-4 sm:mb-6" aria-label="Breadcrumb">
@@ -65,7 +55,6 @@ function Tabs({ product }) {
   ]
   return (
     <div className="mt-10 sm:mt-12">
-      {/* Tab header */}
       <div className="flex border-b border-border">
         {tabs.map((t) => (
           <button
@@ -79,7 +68,6 @@ function Tabs({ product }) {
           </button>
         ))}
       </div>
-      {/* Tab content */}
       <div className="py-5 sm:py-6 text-sm leading-7 text-body">
         {active === 'description' && (
           <p className="whitespace-pre-line">{product.description || 'Belum ada deskripsi untuk produk ini.'}</p>
@@ -133,7 +121,6 @@ function ProductReviewsSection({ product }) {
       const reviews = await fetchApprovedReviews(supabase, { limit: 6, productId: product.id })
       setReviews(reviews)
     } catch (e) {
-      // silent
     } finally {
       setLoading(false)
     }
@@ -204,7 +191,6 @@ function ProductReviewsSection({ product }) {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
-        {/* Reviews list */}
         <div>
           {loading ? (
             <div className="space-y-3">
@@ -249,7 +235,6 @@ function ProductReviewsSection({ product }) {
           )}
         </div>
 
-        {/* Submit form */}
         <div className="rounded-lg border border-border-soft bg-secondary/20 p-5 self-start">
           <h3 className="text-sm font-semibold text-heading">Tulis Ulasan</h3>
           <p className="mt-1 text-xs text-text-muted leading-relaxed">Ulasan akan ditinjau admin sebelum ditampilkan.</p>
@@ -317,7 +302,6 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
   const [currentImg, setCurrentImg] = useState(0)
   const [showStickyBar, setShowStickyBar] = useState(false)
 
-  // Show sticky bar after scroll past the main ATC button
   useEffect(() => {
     const onScroll = () => {
       setShowStickyBar(window.scrollY > 600)
@@ -326,7 +310,6 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Scroll to top on product change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' })
     setCurrentImg(0)
@@ -352,7 +335,6 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
 
   return (
       <div className="bg-background min-h-screen">
-      {/* Main container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <button
           onClick={onHome}
@@ -365,9 +347,7 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
         <Breadcrumbs product={product} onHome={onHome} onCollectionNavigate={onCollectionNavigate} />
 
         <div className="grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-12">
-          {/* Left: Image gallery */}
           <div>
-            {/* Main image */}
             <div className="relative aspect-[4/5] bg-gray-50 overflow-hidden">
               <img
                 src={images[currentImg]}
@@ -375,12 +355,10 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
                 loading="eager"
                 className="h-full w-full object-cover"
               />
-              {/* Badges */}
               <div className="absolute top-3 left-3 flex flex-col gap-1">
                 {discounted && <span className="badge-sale">SALE</span>}
                 {isSoldOut && <span className="badge-soldout">Sold Out</span>}
               </div>
-              {/* Prev/next arrows */}
               {images.length > 1 && (
                 <>
                   <button onClick={prevImg} aria-label="Foto sebelumnya" className="absolute left-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center bg-white/90 text-heading hover:bg-white">
@@ -391,7 +369,6 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
                   </button>
                 </>
               )}
-              {/* Image counter */}
               {images.length > 1 && (
                 <div className="absolute bottom-3 right-3 bg-black/60 text-white text-[11px] px-2 py-1">
                   {currentImg + 1} / {images.length}
@@ -399,7 +376,6 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
               )}
             </div>
 
-            {/* Thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-2 mt-3 overflow-x-auto">
                 {images.map((img, i) => (
@@ -417,7 +393,6 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
             )}
           </div>
 
-          {/* Right: Info (sticky on desktop) */}
           <div className="md:sticky md:top-24 md:self-start">
             {product.category && (
               <p className="text-xs uppercase tracking-button text-gray-500">{product.category}</p>
@@ -433,7 +408,6 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
               </button>
             </div>
 
-            {/* Price */}
             <div className="mt-4">
               {discounted ? (
                 <div className="flex items-baseline gap-2.5">
@@ -448,10 +422,8 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
               )}
             </div>
 
-            {/* Description preview */}
             <p className="mt-5 text-sm leading-7 text-body line-clamp-4">{product.description}</p>
 
-            {/* Quantity + Add to cart (desktop) */}
             <div className="mt-7 space-y-4 hidden md:block">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-body uppercase tracking-button">Jumlah</span>
@@ -501,10 +473,8 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
           </div>
         </div>
 
-        {/* Tabs (full width below the grid) */}
         <Tabs product={product} />
 
-        {/* Related products */}
         <RelatedProducts
           currentProduct={product}
           allProducts={allProducts}
@@ -513,11 +483,9 @@ export default function ProductDetailPage({ product, allProducts = [], onClose, 
           }}
         />
 
-        {/* Product reviews */}
         <ProductReviewsSection product={product} />
       </div>
 
-      {/* Sticky bottom ATC bar — mobile only, visible after scroll */}
       {showStickyBar && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border px-4 py-3 flex items-center gap-3 shadow-lg">
           <div className="flex-1 min-w-0">

@@ -3,16 +3,8 @@ import { HiChevronLeft, HiChevronRight, HiPause, HiPlay } from 'react-icons/hi'
 import { bannerUrl } from '../lib/assetUrl'
 import { supabase } from '../lib/supabase'
 
-/**
- * Hero — ZM-style full-width ecommerce banner carousel.
- * - Loads banners from Supabase `banners` table (admin-uploaded via BannersPage)
- * - Falls back to hardcoded promo slides when no DB banners exist
- * - 5s autoplay, smooth fade, pause on hover
- * - Prev/Next, dots, swipe support
- */
 const AUTOPLAY_MS = 5000
 
-/** Default banners shown when the admin hasn't uploaded any banners yet. */
 const FALLBACK_SLIDES = [
   {
     src: '/posters/poster-1.jpg',
@@ -43,7 +35,7 @@ const FALLBACK_SLIDES = [
   },
 ]
 
-function optimizedPosterSources(src) {
+function posterBits(src) {
   const match = src.match(/^\/posters\/(poster-\d+)\.jpg$/)
   if (!match) return null
   const base = `/posters/${match[1]}`
@@ -63,11 +55,9 @@ export default function Hero() {
   const touchStartX = useRef(null)
   const touchEndX = useRef(null)
 
-  // Keep a ref so navigation callbacks always see the latest slides
   const activeSlidesRef = useRef(activeSlides)
   activeSlidesRef.current = activeSlides
 
-  // --- Load banners from Supabase on mount ---
   useEffect(() => {
     let cancelled = false
     const loadBanners = async () => {
@@ -88,7 +78,6 @@ export default function Hero() {
             .map((banner, i) => ({
               src: banner.image_url,
               mobileSrc: banner.image_url,
-              // Keep the text overlay from fallback so it doesn't flash-disappear
               ...(FALLBACK_SLIDES[i] || {
                 eyebrow: '',
                 title: '',
@@ -98,7 +87,6 @@ export default function Hero() {
               }),
             }))
           if (dbSlides.length > 0) {
-            // Preload the first DB banner before swapping to avoid gray flash
             const img = new Image()
             img.onload = () => {
               if (cancelled) return
@@ -114,11 +102,10 @@ export default function Hero() {
           }
         }
       } catch {
-        // Silently fall back to hardcoded slides
+        // works offline
       }
     }
 
-    // Tiny delay so the local fallback is painted first, then swap to DB
     const timeout = setTimeout(loadBanners, 50)
 
     return () => { cancelled = true; clearTimeout(timeout) }
@@ -167,7 +154,6 @@ export default function Hero() {
   const prev = useCallback(() => goTo((current - 1 + activeSlidesRef.current.length) % activeSlidesRef.current.length), [current, goTo])
   const next = useCallback(() => goTo((current + 1) % activeSlidesRef.current.length), [current, goTo])
 
-  // Swipe handling
   const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX }
   const onTouchMove = (e) => { touchEndX.current = e.touches[0].clientX }
   const onTouchEnd = () => {
@@ -206,7 +192,7 @@ export default function Hero() {
             }`}
           >
             {(() => {
-              const optimized = optimizedPosterSources(slide.src)
+              const optimized = posterBits(slide.src)
               if (optimized) {
                 return (
                   <picture>

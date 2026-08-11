@@ -13,7 +13,6 @@ const BannersPage = lazy(() => import('./admin/BannersPage'))
 const ReviewsPage = lazy(() => import('./admin/ReviewsPage'))
 const OrdersPage = lazy(() => import('./admin/OrdersPage'))
 
-// Login Form
 function LoginForm({ onLogin, onClose }) {
  const [email, setEmail] = useState('')
  const [password, setPassword] = useState('')
@@ -37,7 +36,6 @@ function LoginForm({ onLogin, onClose }) {
    return
   }
 
-  // Ensure profile exists, then check role
   const profile = await ensureProfile(authData.user)
 
   if (!profile || profile.role !== 'admin') {
@@ -128,7 +126,6 @@ function LoginForm({ onLogin, onClose }) {
  )
 }
 
-// Main Admin Dashboard
 export default function AdminDashboard({ onClose, onProductsChanged }) {
  const [session, setSession] = useState(null)
  const [checkingAuth, setCheckingAuth] = useState(true)
@@ -137,7 +134,6 @@ export default function AdminDashboard({ onClose, onProductsChanged }) {
  useEffect(() => {
   supabase.auth.getSession().then(async ({ data: { session } }) => {
    if (session) {
-    // Verify admin role
     const adminCheck = await isAdmin(session.user.id)
     if (adminCheck) {
      setSession(session)

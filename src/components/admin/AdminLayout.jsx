@@ -23,18 +23,18 @@ export default function AdminLayout({ session, onClose, activeTab, setActiveTab,
 
  return (
   <div className="fixed inset-0 z-50 flex bg-gray-50">
-   {/* Mobile overlay */}
+
    {sidebarOpen && (
     <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
    )}
 
-   {/* Sidebar */}
+
    <aside className={`
-    fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 
+    fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200
     flex flex-col transition-transform duration-200 ease-in-out
     ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
    `}>
-    {/* Brand */}
+
     <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
      <img src={siteAssetUrl('logo.jpeg')} alt="Puthic Sari" className="h-9 w-9 object-cover rounded-lg" />
      <div className="min-w-0">
@@ -43,7 +43,7 @@ export default function AdminLayout({ session, onClose, activeTab, setActiveTab,
      </div>
     </div>
 
-    {/* Navigation */}
+
     <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
      {navItems.map(item => {
       const Icon = item.icon
@@ -54,8 +54,8 @@ export default function AdminLayout({ session, onClose, activeTab, setActiveTab,
         onClick={() => { setActiveTab(item.id); setSidebarOpen(false) }}
         className={`
          w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-         ${isActive 
-          ? 'bg-gray-900 text-white shadow-sm' 
+         ${isActive
+          ? 'bg-gray-900 text-white shadow-sm'
           : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}
         `}
        >
@@ -66,7 +66,7 @@ export default function AdminLayout({ session, onClose, activeTab, setActiveTab,
      })}
     </nav>
 
-    {/* User info + logout */}
+
     <div className="border-t border-gray-100 px-4 py-4">
      <div className="flex items-center gap-3 mb-3">
       <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-bold">
@@ -87,9 +87,9 @@ export default function AdminLayout({ session, onClose, activeTab, setActiveTab,
     </div>
    </aside>
 
-   {/* Main content */}
+
    <div className="flex-1 flex flex-col min-w-0">
-    {/* Top bar */}
+
     <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3 flex items-center justify-between sticky top-0 z-30">
      <div className="flex items-center gap-3">
       <button
@@ -111,7 +111,7 @@ export default function AdminLayout({ session, onClose, activeTab, setActiveTab,
      </button>
     </header>
 
-    {/* Page content */}
+
     <main className="flex-1 overflow-y-auto p-4 lg:p-6">
      {children}
     </main>

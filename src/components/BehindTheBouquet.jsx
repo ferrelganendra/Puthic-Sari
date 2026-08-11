@@ -7,11 +7,6 @@ const points = [
   'Hubungi WhatsApp jika membutuhkan bantuan',
 ]
 
-/**
- * BehindTheBouquet — Compact workshop section.
- * - ZM-style two-column with video + text
- * - New client copy
- */
 export default function BehindTheBouquet() {
   return (
     <section className="border-y border-border-soft bg-white py-10 md:py-14">

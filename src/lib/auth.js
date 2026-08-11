@@ -1,12 +1,8 @@
 import { supabase } from './supabase'
 
-/**
- * Get user profile. Admin authority comes only from the profiles table.
- */
 export async function ensureProfile(user) {
  if (!user) return null
 
- // Try to get/create profile in background (best effort)
  try {
   const { data: profile } = await supabase
    .from('profiles')
@@ -16,7 +12,6 @@ export async function ensureProfile(user) {
 
   if (profile) return profile
 
-  // Try to create profile
    const { data: newProfile } = await supabase
     .from('profiles')
     .insert({ id: user.id, email: user.email, role: 'customer' })
@@ -26,16 +21,12 @@ export async function ensureProfile(user) {
 
   if (newProfile) return newProfile
  } catch (e) {
-  // Ignore — fallback below
+  // works until profile loads
  }
 
- // Fallback: default to non-admin until profile is readable.
  return { id: user.id, email: user.email, role: 'customer' }
 }
 
-/**
- * Check if user is admin
- */
 export async function isAdmin(userId) {
  try {
   const { data } = await supabase

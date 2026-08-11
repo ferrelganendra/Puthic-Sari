@@ -9,7 +9,7 @@ export default function BannersPage() {
  const [loading, setLoading] = useState(true)
  const [uploading, setUploading] = useState(false)
  const [uploadError, setUploadError] = useState('')
- const [confirmDelete, setConfirmDelete] = useState(null) // {id}
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
  useEffect(() => {
   fetchBanners()
@@ -85,7 +85,7 @@ export default function BannersPage() {
 
  return (
   <div>
-   {/* Header */}
+
    <div className="flex items-center justify-between mb-6">
     <p className="text-sm text-gray-500">Kelola gambar banner/poster yang tampil di hero carousel.</p>
     <label className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm cursor-pointer">
@@ -113,7 +113,7 @@ export default function BannersPage() {
     </div>
    )}
 
-   {/* Banners grid */}
+
    {loading ? (
     <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
      <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full mx-auto"></div>
@@ -130,7 +130,7 @@ export default function BannersPage() {
      {banners.map((banner, index) => (
       <div key={banner.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
        <div className="flex flex-col sm:flex-row">
-        {/* Preview */}
+
         <div className="sm:w-80 h-40 sm:h-auto flex-shrink-0">
          <img
           src={banner.image_url}
@@ -138,7 +138,7 @@ export default function BannersPage() {
           className="w-full h-full object-cover"
          />
         </div>
-        {/* Info */}
+
         <div className="flex-1 p-4 flex flex-col justify-between">
          <div>
           <div className="flex items-center gap-2 mb-2">

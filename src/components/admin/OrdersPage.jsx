@@ -330,7 +330,7 @@ export default function OrdersPage() {
 
  return (
   <div className="space-y-4">
-   {/* Search + Filter bar */}
+
    <div className="flex flex-col sm:flex-row gap-3">
     <div className="relative flex-1 max-w-sm">
      <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -353,7 +353,7 @@ export default function OrdersPage() {
     </button>
    </div>
 
-   {/* Date filter */}
+
    <div className="flex items-center gap-3 flex-wrap">
     <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Periode</span>
     <div className="flex gap-1">
@@ -380,7 +380,7 @@ export default function OrdersPage() {
     )}
    </div>
 
-   {/* Stats */}
+
    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
     <div className="bg-white rounded-xl border border-gray-200 p-4">
      <p className="text-2xl font-bold text-gray-900">{filtered.length}</p>
@@ -402,7 +402,7 @@ export default function OrdersPage() {
 
    {error && <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3"><p className="text-sm text-red-600">{error}</p></div>}
 
-   {/* Table */}
+
    {loading ? (
     <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
      <div className="animate-spin w-7 h-7 border-2 border-gray-200 border-t-gray-700 rounded-full mx-auto" />
@@ -453,22 +453,22 @@ export default function OrdersPage() {
            </td>
            <td className="py-3 px-4">
             <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
-             {/* Buat Shipment — order paid tanpa shipment */}
+
              {!order.biteship_order_id && ['paid', 'pending_payment'].includes(order.status) && (
               <ActionButton icon={FaBox} label="Buat Shipment — klik untuk membuat pengiriman ke kurir"
                onClick={() => handleCreateShipment(order.id)} loading={actionLoading === `shipment-${order.id}`} color="indigo" />
              )}
-             {/* Cetak Label */}
+
              {order.biteship_order_id && ['processing', 'shipped'].includes(order.status) && (
               <ActionButton icon={FaFileDownload} label="Cetak Label Pengiriman"
                onClick={() => handlePrintLabel(order.id)} loading={actionLoading === `label-${order.id}`} color="blue" />
              )}
-             {/* Atur Pickup */}
+
              {order.biteship_order_id && order.status === 'processing' && !['picking_up', 'picked', 'in_transit', 'dropping_off', 'delivered'].includes(order.shipment_status) && (
               <ActionButton icon={FaTruck} label="Jadwalkan Kurir Jemput Paket"
                onClick={() => handleSchedulePickup(order.id)} loading={actionLoading === `pickup-${order.id}`} color="orange" />
              )}
-             {/* WhatsApp */}
+
              {order.customer_phone && (
               <a href={`https://wa.me/${order.customer_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Halo ${order.customer_name || ''}, update pesanan ${order.order_number || ''} Puthic Sari:`)}`}
                target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-green-600 bg-green-50 hover:bg-green-100 border border-green-200 rounded-md transition-colors" title="Hubungi WhatsApp">
@@ -476,12 +476,12 @@ export default function OrdersPage() {
                <span>WA</span>
               </a>
              )}
-             {/* Batalkan — hanya untuk order aktif */}
+
              {['pending_payment', 'paid', 'processing'].includes(order.status) && (
               <ActionButton icon={FaBan} label="Batalkan Order"
                onClick={() => handleCancelOrder(order.id)} loading={actionLoading === `cancel-${order.id}`} color="red" />
              )}
-             {/* Hapus permanen — semua order */}
+
              <ActionButton icon={FaTrashAlt} label="Hapus Permanen"
               onClick={() => handleDeleteOrder(order.id)} loading={actionLoading === `delete-${order.id}`} color="red" />
             </div>

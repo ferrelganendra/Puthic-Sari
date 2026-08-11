@@ -58,8 +58,6 @@ const normalizeProduct = (product) => {
   const fallback = fallbackProductByName.get(product.name) || {}
   const remoteImages = Array.isArray(product.images) && product.images.length > 0 ? product.images : []
   const fallbackImages = preferredProductImages.get(product.name) || (Array.isArray(fallback.images) ? fallback.images : [])
-  // DB images are Supabase Storage URLs. If DB is unavailable, convert
-  // fallback local paths to Storage URLs so every image path works the same way.
   const images = remoteImages.length > 0
     ? remoteImages
     : (Array.isArray(fallbackImages) ? fallbackImages.map(pi => productImageUrl(pi)) : [])
@@ -105,8 +103,7 @@ const getProductSlugFromLocation = () => {
 const getCollectionSlugFromLocation = () => {
  const match = window.location.pathname.match(/^\/collections\/([^/]+)/)
  if (match) return decodeURIComponent(match[1])
- // Bare /collections → show all products
- if (window.location.pathname === '/collections') return 'all'
+	if (window.location.pathname === '/collections') return 'all'
  return null
 }
 
@@ -230,7 +227,7 @@ function AppInner() {
  const [selectedProduct, setSelectedProduct] = useState(null)
   const [showCheckout, setShowCheckout] = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
-  const [authRoute, setAuthRoute] = useState(null) // 'login' | 'register' | 'forgot-password' | null
+	  const [authRoute, setAuthRoute] = useState(null)
   const [accountRoute, setAccountRoute] = useState(false)
   const [showAccount, setShowAccount] = useState(false)
   const [showResetPwd, setShowResetPwd] = useState(() => window.location.pathname.startsWith('/reset-password'))
@@ -248,13 +245,11 @@ function AppInner() {
   const [pendingScrollRestore, setPendingScrollRestore] = useState(null)
   const [isPending, startTransition] = useTransition()
 
- // Auth state
- const [session, setSession] = useState(null)
+	 const [session, setSession] = useState(null)
  const [profile, setProfile] = useState(null)
  const [authLoading, setAuthLoading] = useState(true)
 
-  // Scroll memory — save per history entry so Back returns to clicked position
- const saveScrollPosition = useCallback((target) => {
+	 const saveScrollPosition = useCallback((target) => {
   const key = `${window.location.pathname}${window.location.search}${window.location.hash}`
   const scrollY = window.scrollY
   const anchor = target?.closest?.('[data-scroll-anchor]')?.dataset.scrollAnchor || null
@@ -382,8 +377,7 @@ function AppInner() {
    setNotFoundRoute(true)
   }, [products, routeProductSlug])
 
-  // Listen for open-auth event from Checkout/Cart — navigate to full page login
-  useEffect(() => {
+	  useEffect(() => {
    const handleOpenAuth = () => {
     saveScrollPosition()
     window.history.pushState({ scrollY: 0 }, '', '/login')
@@ -393,8 +387,7 @@ function AppInner() {
    return () => window.removeEventListener('open-auth', handleOpenAuth)
   }, [saveScrollPosition])
 
-  // Listen for view-product event from ProductDetail related products
-  useEffect(() => {
+	  useEffect(() => {
    const handleViewProductEvent = (e) => {
     if (e.detail) {
      handleViewProduct(e.detail)
@@ -444,9 +437,7 @@ function AppInner() {
    }
   }, [])
 
-  // Check existing session on mount
-
- useEffect(() => {
+	 useEffect(() => {
   let cancelled = false
   let subscription
 
@@ -574,9 +565,7 @@ function AppInner() {
   }
   }, [fetchApprovedReviews, fetchProducts])
 
-  // Filter by category from navbar/menu
-
- const handleCategorySelect = (category) => {
+	 const handleCategorySelect = (category) => {
   setCategoryFilter(category)
   setOccasionFilter(null)
   setBestSellerOnly(false)
@@ -585,8 +574,7 @@ function AppInner() {
   scrollToHomeSection('products')
  }
 
- // Filter by occasion from navbar/menu
- const handleOccasionSelect = (occasion) => {
+	 const handleOccasionSelect = (occasion) => {
   setOccasionFilter(occasion)
   setCategoryFilter(null)
   setBestSellerOnly(false)
@@ -604,8 +592,7 @@ function AppInner() {
    handleCollectionNavigate('Best Seller')
   }
 
-  // Handle NEW ARRIVALS filter by is_new_arrival flag
-  const handleNewArrival = () => {
+	  const handleNewArrival = () => {
    setNewArrivalOnly(true)
    setBestSellerOnly(false)
    setCategoryFilter(null)
@@ -619,8 +606,7 @@ function AppInner() {
   scrollToHomeSection('products')
  }
 
-  // Navigate to collection page
-  const handleCollectionNavigate = (category = null, target = null) => {
+	  const handleCollectionNavigate = (category = null, target = null) => {
    saveScrollPosition(target)
    startTransition(() => {
     setActivePageSlug(null)
@@ -637,8 +623,7 @@ function AppInner() {
    window.scrollTo({ top: 0, behavior: 'instant' })
   }
 
-  // Navigate to search page
-  const handleSearchNavigate = (query) => {
+	  const handleSearchNavigate = (query) => {
    saveScrollPosition()
    startTransition(() => {
     setActivePageSlug(null)
@@ -669,8 +654,7 @@ function AppInner() {
    scrollToHomeSection(null)
   }
 
-  // Handle account icon click
-   const handleAccountClick = () => {
+	   const handleAccountClick = () => {
     if (session && profile) {
       if (profile.role === 'admin') {
        setNotFoundRoute(false)
@@ -689,14 +673,12 @@ function AppInner() {
      }
    }
 
-  // Handle successful auth
-  const handleAuth = (newSession, newProfile) => {
+	  const handleAuth = (newSession, newProfile) => {
    setSession(newSession)
    setProfile(newProfile)
    setAuthRoute(null)
 
-   // Redirect based on role
-   if (newProfile?.role === 'admin') {
+	   if (newProfile?.role === 'admin') {
     setShowAdmin(true)
     } else {
      window.history.pushState({ scrollY: 0 }, '', '/account')
@@ -704,8 +686,7 @@ function AppInner() {
     }
   }
 
-  // Handle logout
-  const handleLogout = () => {
+	  const handleLogout = () => {
    setSession(null)
    setProfile(null)
    setAccountRoute(false)

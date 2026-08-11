@@ -16,7 +16,7 @@ function StarDisplay({ rating }) {
 export default function ReviewsPage() {
  const [reviews, setReviews] = useState([])
  const [loading, setLoading] = useState(true)
- const [filter, setFilter] = useState('pending') // 'pending' | 'approved' | 'all'
+ const [filter, setFilter] = useState('pending')
  const [actionLoading, setActionLoading] = useState(null)
  const [confirmDelete, setConfirmDelete] = useState(null)
 
@@ -59,7 +59,7 @@ export default function ReviewsPage() {
 
  return (
   <div>
-   {/* Filter tabs */}
+
    <div className="flex items-center gap-2 mb-6">
     {[
      { key: 'pending', label: 'Menunggu Persetujuan' },
@@ -99,12 +99,12 @@ export default function ReviewsPage() {
        key={r.id}
        className={`bg-white border rounded-xl p-5 flex flex-col sm:flex-row sm:items-start gap-4 ${r.is_approved ? 'border-green-100' : 'border-amber-100'}`}
       >
-       {/* Avatar */}
+
        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-bold text-sm flex-shrink-0">
         {r.name.charAt(0).toUpperCase()}
        </div>
 
-       {/* Content */}
+
        <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2 mb-1">
          <span className="font-semibold text-gray-800 text-sm">{r.name}</span>
@@ -118,7 +118,7 @@ export default function ReviewsPage() {
         <p className="text-gray-400 text-xs mt-2">{formatDate(r.created_at)}</p>
        </div>
 
-       {/* Actions */}
+
        <div className="flex gap-2 flex-shrink-0">
         {!r.is_approved && (
          <button

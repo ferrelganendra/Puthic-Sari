@@ -1,12 +1,6 @@
 import { memo, useMemo } from 'react'
 import ProductCard from './ProductCard'
 
-/**
- * ProductCollection — Editorial-feel product section.
- * - Generous spacing
- * - Refined section header with eyebrow + heading + CTA
- * - 2-col mobile, 3-col tablet, 4-col desktop grid
- */
 function ProductCollection({
   title,
   subtitle,
@@ -29,7 +23,6 @@ function ProductCollection({
       style={{ backgroundColor: background }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section header — editorial */}
         <div className="mb-8 md:mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
             {eyebrow && (
@@ -63,7 +56,6 @@ function ProductCollection({
           )}
         </div>
 
-        {/* Product grid */}
         <div className="grid grid-cols-2 gap-4 sm:gap-5 md:gap-6 sm:grid-cols-3 md:grid-cols-4">
           {visible.map((product, index) => (
             <ProductCard

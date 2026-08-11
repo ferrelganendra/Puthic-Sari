@@ -6,17 +6,6 @@ import { supabase } from '../lib/supabase'
 import { explainError } from '../lib/errorMessages'
 import AddressSearch from './AddressSearch'
 
-/**
- * Checkout — ZaskiaMecca-style step-based guest checkout.
- * Step 1: Kontak (nama, email, HP)
- * Step 2: Alamat (saved addresses + manual input)
- * Step 3: Pengiriman (Biteship rates)
- * Step 4: Pembayaran (Midtrans)
- *
- * Guest checkout: no login required. Email = identifier.
- * Saved addresses: auto-load from Supabase when email exists.
- */
-
 const snapScriptUrl = import.meta.env.VITE_MIDTRANS_IS_PRODUCTION === 'true'
   ? 'https://app.midtrans.com/snap/snap.js'
   : 'https://app.sandbox.midtrans.com/snap/snap.js'
@@ -82,7 +71,6 @@ function courierLabel(rate) {
   return [courier, service].filter(Boolean).join(' - ')
 }
 
-// Step indicator component
 function StepIndicator({ currentStep }) {
   return (
     <div className="flex items-center justify-center gap-1 sm:gap-2 px-4 py-5 border-b border-border">
@@ -105,7 +93,6 @@ function StepIndicator({ currentStep }) {
   )
 }
 
-// Saved address component
 function SavedAddressCard({ address, isSelected, onSelect }) {
   return (
     <button
@@ -131,13 +118,11 @@ export default function Checkout({ onClose }) {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  // Contact fields
   const [customerName, setCustomerName] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
   const [emailTouched, setEmailTouched] = useState(false)
 
-  // Address fields
   const [selectedAddress, setSelectedAddress] = useState(null)
   const [addressMode, setAddressMode] = useState('select') // select | manual
   const [savedAddresses, setSavedAddresses] = useState([])
@@ -152,13 +137,11 @@ export default function Checkout({ onClose }) {
   const [manualLongitude, setManualLongitude] = useState(0)
   const [manualNote, setManualNote] = useState('')
 
-  // Shipping
   const [rates, setRates] = useState([])
   const [selectedRate, setSelectedRate] = useState(null)
   const [loadingRates, setLoadingRates] = useState(false)
   const [serverSubtotal, setServerSubtotal] = useState(null)
 
-  // Payment
   const [orderNote, setOrderNote] = useState('')
   const [createdOrder, setCreatedOrder] = useState(null)
 
@@ -171,7 +154,6 @@ export default function Checkout({ onClose }) {
   const shippingPrice = selectedRate?.price || 0
   const grandTotal = subtotal + shippingPrice
 
-  // Active address (selected from saved or manual)
   const activeAddress = useMemo(() => {
     if (addressMode === 'manual') {
       return {
@@ -191,7 +173,6 @@ export default function Checkout({ onClose }) {
 
   const isAddressValid = activeAddress?.address_line && /^\d{5}$/.test(activeAddress.postal_code)
 
-  // Fetch saved addresses when email changes (debounced)
   useEffect(() => {
     if (!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
       setSavedAddresses([])
@@ -214,12 +195,11 @@ export default function Checkout({ onClose }) {
           .order('created_at', { ascending: false })
         if (data?.length) {
           setSavedAddresses(data)
-          // Auto-select default
           const def = data.find(a => a.is_default)
           if (def) setSelectedAddress(def)
         }
       } catch {
-        // Table may not exist yet — ignore silently
+        // tmp: older db
       } finally {
         setLoadingAddresses(false)
       }
@@ -227,7 +207,6 @@ export default function Checkout({ onClose }) {
     return () => clearTimeout(timeout)
   }, [customerEmail])
 
-  // Step validation
   const getEmailError = (email) => {
     const trimmed = email.trim()
     if (!trimmed) return 'Email harus diisi.'
@@ -257,13 +236,11 @@ export default function Checkout({ onClose }) {
     if (currentStep === 1) {
       const err = validateStep1()
       if (err) { setError(err); return }
-      // If no saved addresses, go to manual
       if (savedAddresses.length === 0) setAddressMode('manual')
       setCurrentStep(2)
     } else if (currentStep === 2) {
       const err = validateStep2()
       if (err) { setError(err); return }
-      // Save address if manual + email provided
       if (addressMode === 'manual') saveManualAddress()
       setCurrentStep(3)
     } else if (currentStep === 3) {
@@ -277,7 +254,6 @@ export default function Checkout({ onClose }) {
     setCurrentStep(s => Math.max(1, s - 1))
   }
 
-  // Save manual address to Supabase (fire-and-forget)
   const saveManualAddress = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -295,7 +271,7 @@ export default function Checkout({ onClose }) {
         is_default: savedAddresses.length === 0,
       })
     } catch {
-      // Best-effort — don't block checkout
+      // works without saved address
     }
   }
 
@@ -338,8 +314,7 @@ export default function Checkout({ onClose }) {
     let handled = false
     const snap = await loadMidtransSnap()
 
-    // Close any existing Snap popup before opening a new one to avoid
-    // "Invalid state transition from PopupInView to PopupInView" errors.
+    // Midtrans popup gets stuck sometimes
     if (typeof snap.hide === 'function') {
       try { snap.hide() } catch { /* no-op */ }
     }
@@ -361,7 +336,7 @@ export default function Checkout({ onClose }) {
     setError('')
     if (!selectedRate) { setError('Cek ongkir dan pilih kurir.'); return }
 
-    // Guard against double-invocation (StrictMode + double-click)
+    // no double submit
     if (submitting) return
     setSubmitting(true)
     try {
@@ -390,7 +365,6 @@ export default function Checkout({ onClose }) {
     }
   }
 
-  // Success / pending screen
   if (createdOrder) {
     const isPaid = createdOrder.paymentState === 'success'
     const isPending = ['pending', 'closed'].includes(createdOrder.paymentState) || createdOrder.status === 'pending_payment'
@@ -431,12 +405,10 @@ export default function Checkout({ onClose }) {
     )
   }
 
-  // Main checkout form
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl py-6 px-4">
         <div className="bg-white rounded-2xl shadow-soft border border-border/50 overflow-hidden">
-          {/* Header */}
           <div className="flex items-center justify-between border-b border-border px-6 py-4">
             <h2 className="font-medium text-heading">Checkout</h2>
             <button type="button" onClick={onClose} className="text-gray-400 hover:text-heading transition-colors" aria-label="Tutup checkout">
@@ -444,10 +416,8 @@ export default function Checkout({ onClose }) {
             </button>
           </div>
 
-        {/* Step indicator */}
         <StepIndicator currentStep={currentStep} />
 
-        {/* Error banner */}
         {displayError && (
           <div className="mx-6 mt-4 flex gap-3 border border-red-100 bg-red-50 p-4 text-sm text-red-700">
             <HiExclamationCircle className="mt-0.5 flex-shrink-0 text-lg" />

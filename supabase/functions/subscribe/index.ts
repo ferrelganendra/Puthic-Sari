@@ -1,16 +1,3 @@
-/**
- * subscribe — Public Edge Function for newsletter subscribe.
- *
- * Accepts a POST with { email, source? }.
- * Inserts into public.subscribers table if email is not already subscribed.
- * Handles duplicates gracefully: returns success if already subscribed.
- *
- * Security:
- * - No auth required (public endpoint)
- * - Rate limiting: rely on Supabase project-level DDoS protection
- * - RLS allows anon INSERT into subscribers
- */
-
 import { createSupabaseAdmin } from '../_shared/supabase.ts'
 import { handleOptions, jsonResponse, readJson, safeApiError } from '../_shared/http.ts'
 import { enforceRateLimit } from '../_shared/security.ts'
@@ -28,7 +15,6 @@ Deno.serve(async (req) => {
     const email = String(body.email || '').trim().toLowerCase().slice(0, 254)
     const source = String(body.source || 'footer').trim().slice(0, 40)
 
-    // Validate email
     if (!email) {
       return jsonResponse({ success: false, error: 'Email harus diisi.' }, 400)
     }
@@ -36,7 +22,6 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: false, error: 'Format email tidak valid.' }, 400)
     }
 
-    // Check if already subscribed
     const { data: existing } = await supabase
       .from('subscribers')
       .select('id, is_active')
@@ -44,12 +29,10 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (existing) {
-      // Already subscribed and active — return success (idempotent)
       if (existing.is_active) {
         return jsonResponse({ success: true, message: 'Email sudah terdaftar.', status: 'already_subscribed' })
       }
 
-      // Was previously unsubscribed — re-activate
       await supabase
         .from('subscribers')
         .update({ is_active: true, unsubscribed_at: null, source, updated_at: new Date().toISOString() })
@@ -58,13 +41,11 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true, message: 'Berlangganan diaktifkan kembali.', status: 'resubscribed' })
     }
 
-    // New subscriber
     const { error: insertError } = await supabase
       .from('subscribers')
       .insert({ email, source })
 
     if (insertError) {
-      // Handle unique constraint violation gracefully
       if (insertError.code === '23505') {
         return jsonResponse({ success: true, message: 'Email sudah terdaftar.', status: 'already_subscribed' })
       }

@@ -1,12 +1,6 @@
 import { useState } from 'react'
 import { HiX } from 'react-icons/hi'
 
-/**
- * AnnouncementBar — Top promo banner (ZM-style).
- * - Dismissable
- * - Rotates between promos if multiple
- * - Sticky on top, below navbar
- */
 export default function AnnouncementBar() {
   const [visible, setVisible] = useState(true)
 

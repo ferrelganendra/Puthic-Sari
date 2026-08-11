@@ -1,15 +1,5 @@
 import { HiExclamationCircle } from 'react-icons/hi'
 
-/**
- * Modal konfirmasi custom — menggantikan window.confirm() native.
- * Props:
- *   message   — teks pertanyaan
- *   onConfirm — callback jika user klik Ya
- *   onCancel  — callback jika user klik Batal
- *   open — jika false/null modal tidak ditampilkan
- *   confirmLabel — label tombol konfirmasi (default: "Ya, Hapus")
- *   isDanger  — jika true tombol konfirmasi merah (default: true)
- */
 export default function ConfirmDialog({ open = true, message, onConfirm, onCancel, confirmLabel = 'Ya, Hapus', isDanger = true }) {
  if (!open) return null
 

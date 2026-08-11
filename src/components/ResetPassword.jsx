@@ -4,13 +4,6 @@ import { supabase } from '../lib/supabase'
 import { siteAssetUrl } from '../lib/assetUrl'
 import { explainError } from '../lib/errorMessages'
 
-/**
- * ResetPassword — Full page shown when user clicks the link from password reset email.
- * The URL contains a recovery token in the hash, e.g.:
- *   /reset-password#access_token=...&type=recovery&refresh_token=...
- * Supabase auto-detects the recovery session, so we can call updateUser() to set
- * a new password.
- */
 export default function ResetPassword({ onClose }) {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -21,7 +14,6 @@ export default function ResetPassword({ onClose }) {
   const [success, setSuccess] = useState(false)
   const [validSession, setValidSession] = useState(false)
 
-  // On mount: check if we have a recovery session from the URL hash
   useEffect(() => {
     let mounted = true
 
@@ -81,14 +73,12 @@ export default function ResetPassword({ onClose }) {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Brand header */}
         <div className="text-center mb-8">
           <img src={siteAssetUrl('logo.jpeg')} alt="Puthic Sari" className="h-14 w-14 mx-auto rounded-2xl object-cover shadow-sm" />
           <h1 className="mt-4 text-xl font-medium text-heading">Puthic Sari</h1>
           <p className="text-sm text-body mt-1">Reset Password</p>
         </div>
 
-        {/* Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-border/50 p-8">
           {verifying ? (
             <div className="py-10 text-center text-sm text-text-muted">
@@ -175,7 +165,6 @@ export default function ResetPassword({ onClose }) {
           )}
         </div>
 
-        {/* Back to home */}
         <div className="text-center mt-6">
           <a href="/" className="text-sm text-body hover:text-heading transition-colors inline-flex items-center gap-1.5">
             <span>←</span> Kembali ke Beranda

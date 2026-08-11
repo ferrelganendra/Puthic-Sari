@@ -4,12 +4,6 @@ import { useCart } from '../context/CartContext'
 import { useWishlist } from '../context/WishlistContext'
 import { siteAssetUrl } from '../lib/assetUrl'
 
-/**
- * Navbar — ZM-style ecommerce navigation.
- * - Logo LEFT, nav links center-left, actions right
- * - Uppercase nav: SALE, NEW ARRIVALS, COLLECTION, OFFLINE STORE
- * - Mega-menu under COLLECTION
- */
 export default function Navbar({
   onSearch, onSearchNavigate, onAccount, onCategorySelect, onOccasionSelect,
   onBestSellerSelect, onNewArrival, onHome, onStoreSelect, onCollectionNavigate,
@@ -84,7 +78,6 @@ export default function Navbar({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between gap-4">
 
-            {/* Mobile hamburger */}
             <button
               onClick={openDrawer}
               className="lg:hidden -ml-1 p-2 text-heading"
@@ -93,9 +86,7 @@ export default function Navbar({
               <HiMenu className="text-2xl" />
             </button>
 
-            {/* Desktop: Logo + Nav links */}
             <div className="hidden lg:flex items-center gap-8">
-              {/* Logo — left */}
               <a
                 href="/"
                 onClick={(e) => { e.preventDefault(); onHome?.() }}
@@ -112,7 +103,6 @@ export default function Navbar({
                 />
               </a>
 
-              {/* Nav links — uppercase ZM-style */}
               <div className="flex items-center gap-6">
                 <a
                   href="/collections"
@@ -129,7 +119,6 @@ export default function Navbar({
                   New Arrivals
                 </a>
 
-                {/* Collection with mega-menu */}
                 <div
                   className="relative"
                   onMouseEnter={handleMegaEnter}
@@ -202,7 +191,6 @@ export default function Navbar({
                   )}
                 </div>
 
-                {/* Offline Store */}
                 <a
                   href="#store"
                   onClick={(e) => { e.preventDefault(); onStoreSelect?.() }}
@@ -213,9 +201,7 @@ export default function Navbar({
               </div>
             </div>
 
-            {/* Right — search, wishlist, account, cart */}
             <div className="flex items-center gap-3 sm:gap-4">
-              {/* Desktop inline search */}
               <form
                 onSubmit={handleSearch}
                 className="hidden lg:flex items-center gap-2 bg-secondary/40 rounded-full px-3 py-1.5 w-48 xl:w-56 focus-within:bg-secondary/70 transition-colors"
@@ -230,7 +216,6 @@ export default function Navbar({
                 />
               </form>
 
-              {/* Mobile search */}
               <button
                 onClick={() => { setDrawerOpen(false); onSearchNavigate?.('') }}
                 className="lg:hidden text-heading p-1"
@@ -239,7 +224,6 @@ export default function Navbar({
                 <HiSearch className="text-xl" />
               </button>
 
-              {/* Wishlist */}
               <button
                 onClick={() => onSearchNavigate?.('')}
                 className="relative text-heading hover:text-primary transition-colors p-1"
@@ -253,7 +237,6 @@ export default function Navbar({
                 )}
               </button>
 
-              {/* Account */}
               <button
                 onClick={onAccount}
                 className="relative text-heading hover:text-primary transition-colors p-1"
@@ -265,7 +248,6 @@ export default function Navbar({
                 )}
               </button>
 
-              {/* Cart */}
               <button
                 onClick={() => setIsCartOpen(true)}
                 className="relative text-heading hover:text-primary transition-colors p-1"
@@ -283,7 +265,6 @@ export default function Navbar({
         </div>
       </nav>
 
-      {/* Mobile drawer */}
       {drawerOpen && (
         <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-black/40" onClick={closeDrawer} />

@@ -83,7 +83,7 @@ export default function AddressSearch({ onSelect, onClear }) {
   const [selectedName, setSelectedName] = useState('')
   const [failed, setFailed] = useState(false)
   const [geoError, setGeoError] = useState('')
-  const [geoCoords, setGeoCoords] = useState(null) // { latitude, longitude, city, postalCode }
+  const [geoCoords, setGeoCoords] = useState(null)
 
   useEffect(() => {
     const input = query.trim()
@@ -113,7 +113,6 @@ export default function AddressSearch({ onSelect, onClear }) {
   }, [query, selectedName])
 
   const selectAddress = async ({ address, city = '', postalCode = '', latitude = 0, longitude = 0, needsDetail = false }) => {
-    // Merge GPS coordinates if available (user typed address manually)
     const finalLat = latitude || geoCoords?.latitude || 0
     const finalLon = longitude || geoCoords?.longitude || 0
     const finalCity = city || geoCoords?.city || ''
@@ -182,7 +181,6 @@ export default function AddressSearch({ onSelect, onClear }) {
             return
           }
 
-          // Save coordinates only — user types street address manually
           setGeoCoords({ latitude, longitude, city: getCity(place), postalCode: getPostalCode(place) })
           setGeoError('')
         } catch (err) {
@@ -212,7 +210,6 @@ export default function AddressSearch({ onSelect, onClear }) {
     <div className="relative">
       <label className="block text-xs text-body mb-1.5 uppercase tracking-button">Cari Alamat Pengiriman</label>
 
-      {/* Gunakan Lokasi Saya button */}
       <button
         type="button"
         onClick={useMyLocation}

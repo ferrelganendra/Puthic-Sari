@@ -5,14 +5,6 @@ import { HiChevronDown, HiArrowRight, HiCheck, HiRefresh } from 'react-icons/hi'
 import { supabase } from '../lib/supabase'
 import { explainError } from '../lib/errorMessages'
 
-/**
- * Footer — ZM-style ecommerce footer.
- * - Light grey background, clean spacing
- * - 4 columns: INFORMASI, BANTUAN, HUBUNGI KAMI, BERLANGGANAN
- * - Social icons: FB, IG, YouTube, TikTok, Shopee
- * - Mobile: accordion per column
- * - Tagline moved to sub-footer (1 line, not block)
- */
 export default function Footer() {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
@@ -38,7 +30,6 @@ export default function Footer() {
         .insert({ email: trimmed, source: 'footer' })
 
       if (insertError) {
-        // 23505 = unique constraint violation (already subscribed) — treat as success
         if (insertError.code === '23505') {
           setSubscribed(true)
           setEmail('')
@@ -63,10 +54,8 @@ export default function Footer() {
     <footer className="bg-background text-text-primary border-t border-border-soft">
       <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
 
-        {/* Main grid — 4 columns */}
         <div className="grid grid-cols-1 gap-8 py-9 md:grid-cols-2 lg:grid-cols-[0.9fr_0.85fr_1fr_1fr] lg:gap-10 lg:py-10">
 
-          {/* INFORMASI */}
           <details open className="md:open group">
             <summary className="md:cursor-default list-none flex items-center justify-between md:pointer-events-none py-2 md:py-0">
               <h3 className="text-xs font-semibold uppercase tracking-eyebrow text-heading">Informasi</h3>
@@ -81,7 +70,6 @@ export default function Footer() {
             </ul>
           </details>
 
-          {/* BANTUAN */}
           <details open className="md:open group">
             <summary className="md:cursor-default list-none flex items-center justify-between md:pointer-events-none py-2 md:py-0">
               <h3 className="text-xs font-semibold uppercase tracking-eyebrow text-heading">Bantuan</h3>
@@ -95,7 +83,6 @@ export default function Footer() {
             </ul>
           </details>
 
-          {/* HUBUNGI KAMI */}
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-eyebrow text-heading">Hubungi Kami</h3>
             <ul className="mt-5 space-y-3 text-sm text-text-secondary">
@@ -113,7 +100,6 @@ export default function Footer() {
                 </a>
               </li>
             </ul>
-            {/* Social icons */}
             <div className="flex gap-2 mt-4">
               <a href="https://www.facebook.com/puthicsari" target="_blank" rel="noopener noreferrer" className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-text-secondary transition-all hover:border-primary hover:bg-primary hover:text-white" aria-label="Facebook Puthic Sari">
                 <FaFacebookF className="text-xs" />
@@ -133,7 +119,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* BERLANGGANAN */}
           <details open className="md:open group">
             <summary className="md:cursor-default list-none flex items-center justify-between md:pointer-events-none py-2 md:py-0">
               <h3 className="text-xs font-semibold uppercase tracking-eyebrow text-heading">Berlangganan</h3>
@@ -169,7 +154,6 @@ export default function Footer() {
           </details>
         </div>
 
-        {/* Sub-footer — tagline (1 line) + copyright + credit */}
         <div className="border-t border-border-soft py-5 space-y-3">
           <p className="text-xs sm:text-sm text-text-muted text-center">
             <span className="italic text-heading/80">- We Sell the Sign of Love -</span>

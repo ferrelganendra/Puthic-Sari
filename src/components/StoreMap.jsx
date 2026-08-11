@@ -4,12 +4,6 @@ import { HiExternalLink, HiLocationMarker } from 'react-icons/hi'
 const mapsUrl = 'https://maps.app.goo.gl/bb2LpSu4wTnKAgfL6'
 const embedUrl = 'https://www.google.com/maps?q=Puthic%20Sari%20Flowers%20Jl.%20Perumnas%20No.204%20Condongcatur%20Depok%20Sleman&z=16&output=embed'
 
-/**
- * StoreMap — Offline store section with map.
- * - Warm brand-aligned design
- * - Editorial heading + clean layout
- * - Fallback for when iframe fails to load
- */
 export default function StoreMap() {
   const [iframeError, setIframeError] = useState(false)
 
