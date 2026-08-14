@@ -14,7 +14,16 @@ function toProxyPath(urlOrPath) {
 }
 
 function viaProxy(urlOrPath) {
-  return `${PROXY_BASE}${encodeURIComponent(toProxyPath(urlOrPath))}`
+  const p = toProxyPath(urlOrPath)
+  // Normalisasi: decode dulu (DB simpan path udah %-encoded), encode sekali.
+  // Cegah double-encode (%20 -> %2520) yang bikin Supabase 404.
+  let normalized
+  try {
+    normalized = decodeURIComponent(p)
+  } catch {
+    normalized = p
+  }
+  return `${PROXY_BASE}${encodeURIComponent(normalized)}`
 }
 
 export function productImageUrl(localPath) {
