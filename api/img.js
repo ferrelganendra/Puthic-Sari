@@ -1,12 +1,10 @@
 // Proxy gambar Supabase -> Vercel CDN cache.
 // Tujuan: egress Supabase cuma kena 1x per gambar; sisanya di-serve cache Vercel.
-// Cache immutable: file storage tidak bisa di-overwrite dengan konten beda (object storage),
-// jadi max-age panjang aman.
+// Route: /api/img?p=<bucket>/<object-path>  (query param, hindari masalah catch-all multi-segmen)
 const SUPABASE_PROJECT = 'dlduhrsrulsebyrnjdlf'
 
 const BUCKETS = new Set(['product-images', 'banners', 'site-assets', 'videos'])
 
-// Vercel decode query params, jadi path di sini sudah decoded (spasi, +, dst).
 const BAD_CHARS = /[\\:*?"<>|\x00-\x1f]/
 
 function escapeHeader(v) {
@@ -14,15 +12,15 @@ function escapeHeader(v) {
 }
 
 export default async function handler(req, res) {
-  const path = (req.query?.path || []).join('/')
+  const rawPath = req.query?.p || req.query?.path || ''
 
-  if (!path) {
+  if (!rawPath) {
     res.statusCode = 404
     res.end('Not found')
     return
   }
 
-  const [bucket, ...rest] = path.split('/')
+  const [bucket, ...rest] = rawPath.split('/')
   if (!BUCKETS.has(bucket)) {
     res.statusCode = 404
     res.end('Not found')
@@ -39,8 +37,6 @@ export default async function handler(req, res) {
     return
   }
 
-  // ponytail: encode-decode roundtrip; filename dengan % literal di storage akan salah.
-  // Belum ada kasus; kalau muncul, ganti sumber path ke req.url raw.
   const objectPath = segments.map(encodeURIComponent).join('/')
 
   const upstream = `https://${SUPABASE_PROJECT}.supabase.co/storage/v1/object/public/${bucket}/${objectPath}`

@@ -1,5 +1,5 @@
-// Self-check: handler proxy + assetUrl routing. Node 18+ (fetch global).
-import handler from '../api/img/[...path].js'
+// Self-check: handler proxy (query-param) + assetUrl routing. Node 18+ (fetch global).
+import handler from '../api/img.js'
 
 function mockRes() {
   const res = { statusCode: 200, headers: {}, body: null,
@@ -13,41 +13,48 @@ function check(name, cond) {
   else { fail++; console.log('FAIL', name) }
 }
 
-// 1. path decoded (spasi beneran, seperti dari Vercel query)
+// 1. query param p dengan path multi-segmen
 {
   const res = mockRes()
-  await handler({ query: { path: ['product-images', 'product-photos', 'Gerbera + Jute', 'WhatsApp Image 2026-05-13 at 13.16.34.jpeg'] } }, res)
-  check('abs url -> 200 + immutable cache', res.statusCode === 200 && res.headers['cache-control'] === 'public, max-age=31536000, immutable')
+  await handler({ query: { p: 'product-images/product-photos/Gerbera + Jute/WhatsApp Image 2026-05-13 at 13.16.34.jpeg' } }, res)
+  check('query p -> 200 + immutable cache', res.statusCode === 200 && res.headers['cache-control'] === 'public, max-age=31536000, immutable')
   check('content-type image/jpeg', res.headers['content-type'] === 'image/jpeg')
   check('body non-empty', res.body && res.body.length > 1000)
 }
 
-// 2. Bukan bucket valid -> 404
+// 2. query param path (backward compat)
 {
   const res = mockRes()
-  await handler({ query: { path: ['evil', 'x'] } }, res)
+  await handler({ query: { path: 'banners/poster-1.jpg' } }, res)
+  check('query path -> 200', res.statusCode === 200)
+}
+
+// 3. bad bucket -> 404
+{
+  const res = mockRes()
+  await handler({ query: { p: 'evil/x' } }, res)
   check('bad bucket -> 404', res.statusCode === 404)
 }
 
-// 3. Path traversal ditolak
+// 4. traversal -> 400
 {
   const res = mockRes()
-  await handler({ query: { path: ['product-images', '..', '..', 'etc'] } }, res)
+  await handler({ query: { p: 'product-images/../../etc' } }, res)
   check('traversal -> 400', res.statusCode === 400)
 }
 
-// 4. File gak ada -> 404
+// 5. file gak ada -> 404
 {
   const res = mockRes()
-  await handler({ query: { path: ['product-images', 'nonexistent.jpg'] } }, res)
-  check('missing file -> 404', res.statusCode === 404)
+  await handler({ query: { p: 'product-images/nonexistent.jpg' } }, res)
+  check('missing -> 404', res.statusCode === 404)
 }
 
-// 5. assetUrl routing
+// 6. assetUrl routing
 const mod = await import('../src/lib/assetUrl.js')
 const abs = 'https://dlduhrsrulsebyrnjdlf.supabase.co/storage/v1/object/public/product-images/product-photos/Gerbera + Jute/x.jpeg'
-check('productImageUrl(abs supabase) -> /api/img/... (no double slash)',
-  mod.productImageUrl(abs) === '/api/img/product-images/product-photos/Gerbera + Jute/x.jpeg')
+check('productImageUrl(abs) -> /api/img?p=... encoded',
+  mod.productImageUrl(abs) === `/api/img?p=${encodeURIComponent('product-images/product-photos/Gerbera + Jute/x.jpeg')}`)
 check('videoUrl -> tetap supabase', mod.videoUrl('behind-the-bouquet.mp4') === 'https://dlduhrsrulsebyrnjdlf.supabase.co/storage/v1/object/public/videos/behind-the-bouquet.mp4')
 check('URL non-supabase untouched', mod.productImageUrl('https://maps.gstatic.com/x.png') === 'https://maps.gstatic.com/x.png')
 

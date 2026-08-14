@@ -2,10 +2,11 @@ const SUPABASE_BASE =
   'https://dlduhrsrulsebyrnjdlf.supabase.co/storage/v1/object/public'
 
 // Proxy lokal Vercel -> cache CDN. Turunkan egress Supabase.
-const PROXY_BASE = '/api/img'
+// Query-param based (hindari catch-all multi-segmen yang gak ke-bundle di Vercel).
+const PROXY_BASE = '/api/img?p='
 
 // Ubah URL absolut Supabase -> path proxy. URL non-Supabase dibiarkan.
-function toProxyUrl(urlOrPath) {
+function toProxyPath(urlOrPath) {
   if (urlOrPath.startsWith(SUPABASE_BASE)) {
     return urlOrPath.slice(SUPABASE_BASE.length).replace(/^\//, '')
   }
@@ -13,7 +14,7 @@ function toProxyUrl(urlOrPath) {
 }
 
 function viaProxy(urlOrPath) {
-  return `${PROXY_BASE}/${toProxyUrl(urlOrPath)}`
+  return `${PROXY_BASE}${encodeURIComponent(toProxyPath(urlOrPath))}`
 }
 
 export function productImageUrl(localPath) {
@@ -23,8 +24,7 @@ export function productImageUrl(localPath) {
   }
   if (!localPath.startsWith('/product-photos/')) return localPath
   const path = localPath.replace(/^\//, '')
-  const encoded = path.split('/').map(encodeURIComponent).join('/')
-  return viaProxy(`product-images/${encoded}`)
+  return viaProxy(`product-images/${path}`)
 }
 
 export function productImageUrls(paths) {
@@ -39,8 +39,7 @@ export function productThumbnailUrl(localPath) {
   }
   if (!localPath.startsWith('/product-thumbs/')) return localPath
   const path = localPath.replace(/^\//, '')
-  const encoded = path.split('/').map(encodeURIComponent).join('/')
-  return viaProxy(`product-images/${encoded}`)
+  return viaProxy(`product-images/${path}`)
 }
 
 export function bannerUrl(name) {
@@ -58,8 +57,7 @@ export function siteAssetUrl(localPath) {
     return localPath.startsWith(SUPABASE_BASE) ? viaProxy(localPath) : localPath
   }
   const path = localPath.replace(/^\//, '')
-  const encoded = path.split('/').map(encodeURIComponent).join('/')
-  return viaProxy(`site-assets/${encoded}`)
+  return viaProxy(`site-assets/${path}`)
 }
 
 export function videoUrl(localPath) {
