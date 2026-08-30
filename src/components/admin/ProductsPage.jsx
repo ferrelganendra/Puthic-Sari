@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineSearch, HiOutlinePhotograph, HiStar } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
 import { explainError } from '../../lib/errorMessages'
+import { productImageUrl } from '../../lib/assetUrl'
 import ProductForm from './ProductForm'
 import ConfirmDialog from './ConfirmDialog'
 
@@ -209,7 +210,7 @@ export default function ProductsPage({ onProductsChanged }) {
           <td className="py-3 px-4">
            <div className="flex items-center gap-3">
             {p.images?.[0] ? (
-             <img src={p.images[0]} alt={p.name} className="w-11 h-11 object-cover rounded-lg flex-shrink-0 border border-gray-100" />
+             <img src={productImageUrl(p.images[0])} alt={p.name} className="w-11 h-11 object-cover rounded-lg flex-shrink-0 border border-gray-100" />
             ) : (
              <div className="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <HiOutlinePhotograph className="text-gray-400" />

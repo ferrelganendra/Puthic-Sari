@@ -51,12 +51,17 @@ function check(name, cond) {
 }
 
 // 6. assetUrl routing
+process.env.VITE_IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/fqdpfuwjf/'
 const mod = await import('../src/lib/assetUrl.js')
-const abs = 'https://dlduhrsrulsebyrnjdlf.supabase.co/storage/v1/object/public/product-images/product-photos/Gerbera%20%2B%20Jute/x.jpeg'
-// DB simpan path udah %-encoded -> hasil harus SINGLE encode (bukan %2520)
-check('productImageUrl(abs) -> single-encode (no double)',
-  mod.productImageUrl(abs) === `/api/img?p=${encodeURIComponent('product-images/product-photos/Gerbera + Jute/x.jpeg')}`)
-check('videoUrl -> tetap supabase', mod.videoUrl('behind-the-bouquet.mp4') === 'https://dlduhrsrulsebyrnjdlf.supabase.co/storage/v1/object/public/videos/behind-the-bouquet.mp4')
+const abs = 'https://dlduhrsrulsebyrnjdlf.supabase.co/storage/v1/object/public/product-images/product-photos/Unmigrated/x.jpeg'
+// Path yang belum dimigrasikan tetap fallback ke proxy dengan SINGLE encode.
+check('productImageUrl(abs) -> single-encode fallback (no double)',
+  mod.productImageUrl(abs) === `/api/img?p=${encodeURIComponent('product-images/product-photos/Unmigrated/x.jpeg')}`)
+const migrated = 'https://ik.imagekit.io/fqdpfuwjf/migrated/product-images/6f72c006b3e1eed7-1787315722639-ffupbdl5cjt.jpg'
+check('migrated ImageKit product URL passes through unchanged',
+  mod.productImageUrl(migrated) === migrated)
+check('videoUrl(migrated) -> ImageKit with Range-compatible URL',
+  mod.videoUrl('behind-the-bouquet.mp4') === 'https://ik.imagekit.io/fqdpfuwjf/migrated/videos/behind-the-bouquet.mp4')
 check('URL non-supabase untouched', mod.productImageUrl('https://maps.gstatic.com/x.png') === 'https://maps.gstatic.com/x.png')
 
 console.log(`\n${pass} passed, ${fail} failed`)

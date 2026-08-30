@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { HiOutlineTag, HiOutlineSearch } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
+import { productImageUrl } from '../../lib/assetUrl'
 
 const formatPrice = (p) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(p)
 
@@ -89,7 +90,7 @@ export default function DiscountsPage() {
           <td className="py-3 px-4">
            <div className="flex items-center gap-3">
             {p.images?.[0] ? (
-             <img src={p.images[0]} alt={p.name} className="w-10 h-10 object-cover rounded-lg flex-shrink-0 border border-gray-100" />
+             <img src={productImageUrl(p.images[0])} alt={p.name} className="w-10 h-10 object-cover rounded-lg flex-shrink-0 border border-gray-100" />
             ) : (
              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <HiOutlineTag className="text-gray-400" />

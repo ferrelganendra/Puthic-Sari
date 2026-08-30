@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { HiOutlineX, HiOutlinePhotograph, HiOutlineTrash, HiOutlineUpload } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
 import { explainError } from '../../lib/errorMessages'
+import { productImageUrl } from '../../lib/assetUrl'
+import { uploadImages as uploadImageFiles } from '../../lib/imagekit'
 
 const productFlagsMigrationMessage = 'Kolom Best Seller / Sold Out belum ada di Supabase. Jalankan scripts/migration-product-flags.sql di SQL Editor, lalu reload halaman admin.'
 const categoryLabel = {
@@ -38,6 +40,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
  const [occasions, setOccasions] = useState([])
  const [selectedOccasions, setSelectedOccasions] = useState([])
  const [uploading, setUploading] = useState(false)
+ const [uploadFailed, setUploadFailed] = useState(false)
  const [saving, setSaving] = useState(false)
  const [error, setError] = useState('')
   const [dragOver, setDragOver] = useState(false)
@@ -91,31 +94,18 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
    return
   }
 
+  setError('')
+  setUploadFailed(false)
   setUploading(true)
-  const uploaded = []
-
-  for (const file of files) {
-   const ext = file.name.split('.').pop()
-   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-   const filePath = `products/${fileName}`
-
-   const { error } = await supabase.storage
-    .from('product-images')
-    .upload(filePath, file, { cacheControl: '3600', upsert: false })
-
-   if (!error) {
-    const { data: urlData } = supabase.storage
-     .from('product-images')
-     .getPublicUrl(filePath)
-    uploaded.push(urlData.publicUrl)
-   } else {
-     setError(`Upload ${file.name} gagal. ${explainError(error, 'Pastikan file gambar valid dan storage Supabase aktif.')}`)
-
-   }
+  try {
+   const uploaded = await uploadImageFiles(files, 'products')
+   setForm(prev => ({ ...prev, images: [...prev.images, ...uploaded] }))
+  } catch (uploadError) {
+   setUploadFailed(true)
+   setError(explainError(uploadError, 'Upload foto gagal. Coba lagi setelah mengecek koneksi dan sesi admin.'))
+  } finally {
+   setUploading(false)
   }
-
-  setForm(prev => ({ ...prev, images: [...prev.images, ...uploaded] }))
-  setUploading(false)
  }
 
  const handleFileSelect = (e) => {
@@ -146,6 +136,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
 
  const handleSubmit = async (e) => {
   e.preventDefault()
+  if (uploading || uploadFailed) return
   setSaving(true)
   setError('')
 
@@ -404,7 +395,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mt-3">
         {form.images.map((url, i) => (
          <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200">
-          <img src={url} alt="" className="w-full h-full object-cover" />
+          <img src={productImageUrl(url)} alt="" className="w-full h-full object-cover" />
           <button
            type="button"
            onClick={() => removeImage(i)}
@@ -497,7 +488,7 @@ export default function ProductForm({ product, onSave, onClose, flagColumnMissin
       </button>
       <button
        type="submit"
-       disabled={saving}
+       disabled={saving || uploading || uploadFailed}
        className="flex-1 px-4 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 shadow-sm"
       >
        {saving ? 'Menyimpan...' : (product?.id ? 'Simpan Perubahan' : 'Tambah Produk')}

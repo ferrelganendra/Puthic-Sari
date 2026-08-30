@@ -8,6 +8,7 @@
     "prebuild": "npm run sitemap",
     "dev": "vite",
     "build": "vite build",
+    "test:imagekit": "node tests/imagekit-auth-check.mjs",
     "preview": "vite preview",
     "test:regressions:14": "node tests/regression-14.mjs"
   },

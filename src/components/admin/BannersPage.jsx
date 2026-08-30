@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { HiOutlinePlus, HiOutlineTrash, HiOutlineUpload, HiOutlinePhotograph } from 'react-icons/hi'
 import { supabase } from '../../lib/supabase'
 import { explainError } from '../../lib/errorMessages'
+import { bannerUrl } from '../../lib/assetUrl'
+import { uploadImage } from '../../lib/imagekit'
 import ConfirmDialog from './ConfirmDialog'
 
 export default function BannersPage() {
@@ -37,34 +39,22 @@ export default function BannersPage() {
    return
   }
   setUploading(true)
-  const ext = file.name.split('.').pop()
-  const fileName = `banner-${Date.now()}.${ext}`
-  const filePath = `banners/${fileName}`
+  try {
+   const imageUrl = await uploadImage(file, 'banners')
+   const sortOrder = banners.length > 0 ? Math.max(...banners.map(b => b.sort_order || 0)) + 1 : 1
+   const { error: insertError } = await supabase.from('banners').insert({
+    image_url: imageUrl,
+    sort_order: sortOrder,
+    is_active: true,
+   })
 
-  const { error: uploadErr } = await supabase.storage
-   .from('product-images')
-   .upload(filePath, file, { cacheControl: '3600', upsert: false })
-
-   if (uploadErr) {
-    setUploadError(explainError(uploadErr, 'Banner belum bisa diupload. Pastikan file gambar valid dan storage Supabase aktif.'))
-    setUploading(false)
-    return
-   }
-
-  const { data: urlData } = supabase.storage
-   .from('product-images')
-   .getPublicUrl(filePath)
-
-  const sortOrder = banners.length > 0 ? Math.max(...banners.map(b => b.sort_order || 0)) + 1 : 1
-
-  await supabase.from('banners').insert({
-   image_url: urlData.publicUrl,
-   sort_order: sortOrder,
-   is_active: true,
-  })
-
-  fetchBanners()
-  setUploading(false)
+   if (insertError) throw insertError
+   fetchBanners()
+  } catch (uploadError) {
+   setUploadError(explainError(uploadError, 'Banner belum bisa diupload. Coba lagi setelah mengecek koneksi dan sesi admin.'))
+  } finally {
+   setUploading(false)
+  }
  }
 
  const handleFileSelect = (e) => {
@@ -133,7 +123,7 @@ export default function BannersPage() {
 
         <div className="sm:w-80 h-40 sm:h-auto flex-shrink-0">
          <img
-          src={banner.image_url}
+          src={bannerUrl(banner.image_url)}
           alt={`Banner ${index + 1}`}
           className="w-full h-full object-cover"
          />
