@@ -5,13 +5,13 @@ const SUPABASE_BASE =
 const IMAGEKIT_BASE = (
   import.meta.env?.VITE_IMAGEKIT_URL_ENDPOINT
   || (typeof process !== 'undefined' ? process.env.VITE_IMAGEKIT_URL_ENDPOINT : '')
-  || ''
+  || 'https://ik.imagekit.io/fqdpfuwjf'
 ).replace(/\/$/, '')
 const PROXY_BASE = '/api/img?p='
 
 function imageKitUrl(storageKey) {
   const path = imagekitAssets[storageKey]
-  return IMAGEKIT_BASE && path ? `${IMAGEKIT_BASE}/${path}` : null
+  return path ? viaProxy(path) : null
 }
 
 function imageKitOrProxy(...storageKeys) {
@@ -37,10 +37,22 @@ function migratedUrl(url) {
   return key ? imageKitUrl(key) : null
 }
 
-// Ubah URL absolut Supabase -> path proxy. URL non-Supabase dibiarkan.
+function isImageKitUrl(url) {
+  return url.startsWith('https://ik.imagekit.io/') || (Boolean(IMAGEKIT_BASE) && url.startsWith(IMAGEKIT_BASE))
+}
+
+// Ubah URL absolut Supabase atau ImageKit -> path proxy. URL non-media dibiarkan.
 function toProxyPath(urlOrPath) {
   if (urlOrPath.startsWith(SUPABASE_BASE)) {
     return urlOrPath.slice(SUPABASE_BASE.length).replace(/^\//, '')
+  }
+  if (IMAGEKIT_BASE && urlOrPath.startsWith(IMAGEKIT_BASE)) {
+    return urlOrPath.slice(IMAGEKIT_BASE.length).replace(/^\//, '')
+  }
+  if (urlOrPath.startsWith('https://ik.imagekit.io/')) {
+    const afterOrigin = urlOrPath.slice('https://ik.imagekit.io/'.length)
+    const firstSlash = afterOrigin.indexOf('/')
+    return (firstSlash !== -1 ? afterOrigin.slice(firstSlash + 1) : afterOrigin).replace(/^\//, '')
   }
   return urlOrPath.replace(/^\//, '')
 }
@@ -48,7 +60,7 @@ function toProxyPath(urlOrPath) {
 function viaProxy(urlOrPath) {
   const p = toProxyPath(urlOrPath)
   // Normalisasi: decode dulu (DB simpan path udah encoded), encode sekali.
-  // Cegah double-encode (%20 -> %2520) yang bikin Supabase 404.
+  // Cegah double-encode (%20 -> %2520) yang bikin Supabase/ImageKit 404.
   let normalized
   try {
     normalized = decodeURIComponent(p)
@@ -60,8 +72,15 @@ function viaProxy(urlOrPath) {
 
 export function productImageUrl(localPath) {
   if (!localPath || typeof localPath !== 'string') return localPath
+  if (localPath.startsWith('data:')) return localPath
   if (localPath.startsWith('http')) {
-    return localPath.startsWith(SUPABASE_BASE) ? migratedUrl(localPath) || viaProxy(localPath) : localPath
+    if (localPath.startsWith(SUPABASE_BASE)) {
+      return migratedUrl(localPath) || viaProxy(localPath)
+    }
+    if (isImageKitUrl(localPath)) {
+      return viaProxy(localPath)
+    }
+    return localPath
   }
   if (!localPath.startsWith('/product-photos/')) return localPath
   const path = localPath.replace(/^\//, '')
@@ -75,8 +94,15 @@ export function productImageUrls(paths) {
 
 export function productThumbnailUrl(localPath) {
   if (!localPath || typeof localPath !== 'string') return localPath
+  if (localPath.startsWith('data:')) return localPath
   if (localPath.startsWith('http')) {
-    return localPath.startsWith(SUPABASE_BASE) ? migratedUrl(localPath) || viaProxy(localPath) : localPath
+    if (localPath.startsWith(SUPABASE_BASE)) {
+      return migratedUrl(localPath) || viaProxy(localPath)
+    }
+    if (isImageKitUrl(localPath)) {
+      return viaProxy(localPath)
+    }
+    return localPath
   }
   if (!localPath.startsWith('/product-thumbs/')) return localPath
   const path = localPath.replace(/^\//, '')
@@ -85,8 +111,15 @@ export function productThumbnailUrl(localPath) {
 
 export function bannerUrl(name) {
   if (!name || typeof name !== 'string') return name
+  if (name.startsWith('data:')) return name
   if (name.startsWith('http')) {
-    return name.startsWith(SUPABASE_BASE) ? migratedUrl(name) || viaProxy(name) : name
+    if (name.startsWith(SUPABASE_BASE)) {
+      return migratedUrl(name) || viaProxy(name)
+    }
+    if (isImageKitUrl(name)) {
+      return viaProxy(name)
+    }
+    return name
   }
   const file = name.replace(/^\//, '')
   return imageKitOrProxy(`banners/${file}`, `product-images/banners/${file}`)
@@ -94,8 +127,15 @@ export function bannerUrl(name) {
 
 export function siteAssetUrl(localPath) {
   if (!localPath || typeof localPath !== 'string') return localPath
+  if (localPath.startsWith('data:')) return localPath
   if (localPath.startsWith('http')) {
-    return localPath.startsWith(SUPABASE_BASE) ? migratedUrl(localPath) || viaProxy(localPath) : localPath
+    if (localPath.startsWith(SUPABASE_BASE)) {
+      return migratedUrl(localPath) || viaProxy(localPath)
+    }
+    if (isImageKitUrl(localPath)) {
+      return viaProxy(localPath)
+    }
+    return localPath
   }
   const path = localPath.replace(/^\//, '')
   return imageKitOrProxy(`site-assets/${path}`)
@@ -104,8 +144,8 @@ export function siteAssetUrl(localPath) {
 export function videoUrl(localPath) {
   if (!localPath || typeof localPath !== 'string') return localPath
   if (localPath.startsWith('http')) {
-    return localPath.startsWith(SUPABASE_BASE) ? migratedUrl(localPath) || localPath : localPath
+    return localPath
   }
   const path = localPath.replace(/^\//, '')
-  return imageKitUrl(`videos/${path}`) || `${SUPABASE_BASE}/videos/${path}`
+  return `${SUPABASE_BASE}/videos/${path}`
 }

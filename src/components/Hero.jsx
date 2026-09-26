@@ -76,8 +76,8 @@ export default function Hero() {
           const dbSlides = data
             .filter((b) => b.image_url)
             .map((banner, i) => ({
-              src: banner.image_url,
-              mobileSrc: banner.image_url,
+              src: bannerUrl(banner.image_url),
+              mobileSrc: bannerUrl(banner.image_url),
               ...(FALLBACK_SLIDES[i] || {
                 eyebrow: '',
                 title: '',

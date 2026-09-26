@@ -56,11 +56,15 @@ preferredProductImages.set('Thumbelina Old Paper Bloom', [
 
 const normalizeProduct = (product) => {
   const fallback = fallbackProductByName.get(product.name) || {}
-  const remoteImages = Array.isArray(product.images) && product.images.length > 0 ? product.images : []
+  const remoteImages = Array.isArray(product.images) && product.images.length > 0
+    ? product.images.map(productImageUrl)
+    : []
   const fallbackImages = preferredProductImages.get(product.name) || (Array.isArray(fallback.images) ? fallback.images : [])
   const images = remoteImages.length > 0
     ? remoteImages
     : (Array.isArray(fallbackImages) ? fallbackImages.map(pi => productImageUrl(pi)) : [])
+  const remoteThumbnail = product.thumbnail ? productThumbnailUrl(product.thumbnail) : ''
+  const fallbackThumbnail = fallback.thumbnail ? productThumbnailUrl(fallback.thumbnail) : ''
   const badge = (product.badge || fallback.badge || '').toLowerCase()
   const fallbackBestSeller = fallback.is_best_seller ?? badge.includes('best seller')
   const fallbackNewArrival = fallback.is_new_arrival ?? (badge.includes('baru') || badge.includes('new'))
@@ -69,8 +73,8 @@ const normalizeProduct = (product) => {
     ...fallback,
     ...product,
     images,
-    image: images[0] || product.image || fallback.image || '',
-    thumbnail: product.thumbnail || fallback.thumbnail || productThumbnailByName.get(product.name),
+    image: images[0] || productImageUrl(product.image || fallback.image) || '',
+    thumbnail: remoteThumbnail || fallbackThumbnail || productThumbnailByName.get(product.name),
     category: product.category || fallback.category,
     description: product.description || fallback.description || buildProductDescription({ ...fallback, ...product }),
     material: product.material || fallback.material || null,

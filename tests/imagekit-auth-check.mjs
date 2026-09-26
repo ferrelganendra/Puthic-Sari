@@ -30,15 +30,15 @@ check('missing Bearer token returns null', parseBearerToken({ headers: {} }) ===
 process.env.VITE_IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/fqdpfuwjf/'
 const assetUrl = await import('../src/lib/assetUrl.js')
 const imagekitAssets = (await import('../src/data/imagekitAssets.js')).default
-check('ImageKit URL passes through unchanged',
- assetUrl.productImageUrl('https://ik.imagekit.io/fqdpfuwjf/products/test.jpg') === 'https://ik.imagekit.io/fqdpfuwjf/products/test.jpg')
+check('ImageKit URL routes through proxy (bypasses ISP block)',
+ assetUrl.productImageUrl('https://ik.imagekit.io/fqdpfuwjf/products/test.jpg') === `/api/img?p=${encodeURIComponent('products/test.jpg')}`)
 check('asset inventory contains required migrated entries', ['videos/behind-the-bouquet.mp4', 'site-assets/logo.jpeg'].every((key) => imagekitAssets[key]))
 check('migration inventory includes video', imagekitAssets['videos/behind-the-bouquet.mp4'] === 'migrated/videos/behind-the-bouquet.mp4')
 check('migration inventory has no empty URLs', Object.values(imagekitAssets).every(Boolean))
 
 const migratedVideo = 'https://dlduhrsrulsebyrnjdlf.supabase.co/storage/v1/object/public/videos/behind-the-bouquet.mp4'
-check('migrated Supabase video URL maps to ImageKit',
- assetUrl.videoUrl(migratedVideo) === 'https://ik.imagekit.io/fqdpfuwjf/migrated/videos/behind-the-bouquet.mp4')
+check('video served with Range-compatible Supabase URL',
+ assetUrl.videoUrl(migratedVideo) === migratedVideo)
 const assetUrlFallback = assetUrl.productImageUrl('https://dlduhrsrulsebyrnjdlf.supabase.co/storage/v1/object/public/product-images/product-photos/Unmigrated/x.jpeg')
 check('unmapped Supabase URL falls back to proxy', assetUrlFallback === `/api/img?p=${encodeURIComponent('product-images/product-photos/Unmigrated/x.jpeg')}`)
 const oldVideoFallback = assetUrl.videoUrl('not-migrated.mp4')

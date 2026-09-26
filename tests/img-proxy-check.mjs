@@ -58,11 +58,19 @@ const abs = 'https://dlduhrsrulsebyrnjdlf.supabase.co/storage/v1/object/public/p
 check('productImageUrl(abs) -> single-encode fallback (no double)',
   mod.productImageUrl(abs) === `/api/img?p=${encodeURIComponent('product-images/product-photos/Unmigrated/x.jpeg')}`)
 const migrated = 'https://ik.imagekit.io/fqdpfuwjf/migrated/product-images/6f72c006b3e1eed7-1787315722639-ffupbdl5cjt.jpg'
-check('migrated ImageKit product URL passes through unchanged',
-  mod.productImageUrl(migrated) === migrated)
-check('videoUrl(migrated) -> ImageKit with Range-compatible URL',
-  mod.videoUrl('behind-the-bouquet.mp4') === 'https://ik.imagekit.io/fqdpfuwjf/migrated/videos/behind-the-bouquet.mp4')
+check('migrated ImageKit product URL routes via proxy (bypasses ISP block)',
+  mod.productImageUrl(migrated) === `/api/img?p=${encodeURIComponent('migrated/product-images/6f72c006b3e1eed7-1787315722639-ffupbdl5cjt.jpg')}`)
+check('videoUrl(migrated) -> Supabase Range-compatible URL (unblocked by ISP)',
+  mod.videoUrl('behind-the-bouquet.mp4') === 'https://dlduhrsrulsebyrnjdlf.supabase.co/storage/v1/object/public/videos/behind-the-bouquet.mp4')
 check('URL non-supabase untouched', mod.productImageUrl('https://maps.gstatic.com/x.png') === 'https://maps.gstatic.com/x.png')
+
+// 7. query param p dengan path ImageKit migrated
+{
+  const res = mockRes()
+  await handler({ query: { p: 'migrated/product-images/3d30fc96db7e26f3-WhatsApp-Image-2026-05-13-at-13.16.34.jpeg' } }, res)
+  check('query p (imagekit migrated) -> 200 + immutable cache', res.statusCode === 200 && res.headers['cache-control'] === 'public, max-age=31536000, immutable')
+  check('body non-empty for imagekit', res.body && res.body.length > 1000)
+}
 
 console.log(`\n${pass} passed, ${fail} failed`)
 process.exit(fail ? 1 : 0)

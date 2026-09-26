@@ -14,6 +14,12 @@ function imageKitAuthDevMiddleware(mode) {
         const { default: handler } = await import('./api/imagekit-auth.js')
         return handler(req, res)
       })
+      server.middlewares.use('/api/img', async (req, res) => {
+        const { default: handler } = await import('./api/img.js')
+        const url = new URL(req.url, 'http://localhost')
+        req.query = Object.fromEntries(url.searchParams.entries())
+        return handler(req, res)
+      })
     },
   }
 }
